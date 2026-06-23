@@ -1,4 +1,4 @@
-import { formatMoney, signOf, type Minor } from '@/lib/money';
+import { formatMoney, formatCompactMoney, signOf, type Minor } from '@/lib/money';
 
 /**
  * Денежное значение. Прибыль/убыток различаются НЕ только цветом (доступность):
@@ -9,18 +9,23 @@ export function Money({
   currency,
   colorize = false,
   showSign = false,
+  compact = false,
   className = '',
 }: {
   amount: Minor;
   currency: string;
   colorize?: boolean;
   showSign?: boolean;
+  compact?: boolean;
   className?: string;
 }) {
   const sign = signOf(amount);
   const colorClass =
     colorize && sign === 'positive' ? 'text-positive' : colorize && sign === 'negative' ? 'text-negative' : '';
   const srLabel = sign === 'positive' ? 'доход' : sign === 'negative' ? 'расход' : '';
+  const text = compact
+    ? formatCompactMoney(amount, currency, { showSign })
+    : formatMoney(amount, currency, { showSign });
 
   return (
     <span className={`money whitespace-nowrap ${colorClass} ${className}`}>
@@ -29,7 +34,7 @@ export function Money({
           {sign === 'positive' ? '▲' : '▼'}
         </span>
       )}
-      {formatMoney(amount, currency, { showSign })}
+      {text}
       {srLabel && <span className="sr-only"> ({srLabel})</span>}
     </span>
   );

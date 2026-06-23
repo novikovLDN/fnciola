@@ -124,6 +124,35 @@ export function formatMoney(
 }
 
 /**
+ * Компактное форматирование крупных сумм (тыс./млн/млрд) — чтобы большие
+ * значения не вылезали за карточки. Мелкие суммы показываются полностью.
+ */
+export function formatCompactMoney(
+  amountMinor: Minor,
+  currency: string,
+  opts: { locale?: string; showSign?: boolean } = {},
+): string {
+  const { locale = 'ru-RU', showSign = false } = opts;
+  const meta = getCurrency(currency);
+  const major = minorToMajorNumber(amountMinor, currency);
+  const abs = Math.abs(major);
+
+  const sign = major < 0 ? '−' : showSign ? '+' : '';
+  const sym = meta.symbol;
+
+  const compact = (n: number, suffix: string) => {
+    const v = new Intl.NumberFormat(locale, { minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(n);
+    return `${sign}${v} ${suffix} ${sym}`.trim();
+  };
+
+  if (abs >= 1_000_000_000) return compact(abs / 1_000_000_000, 'млрд');
+  if (abs >= 1_000_000) return compact(abs / 1_000_000, 'млн');
+  if (abs >= 100_000) return compact(abs / 1_000, 'тыс.');
+  // мелкие — обычное форматирование
+  return formatMoney(amountMinor, currency, { locale, showSign });
+}
+
+/**
  * Знак суммы как семантический ярлык — для доступности (§5.2, §14.2):
  * прибыль/убыток различаем НЕ только цветом.
  */

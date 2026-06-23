@@ -27,13 +27,13 @@ export default function DashboardPage() {
       {/* Баланс */}
       <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="mb-5 text-center">
         <div className="label">Баланс</div>
-        <div className="mt-1 font-display text-4xl font-extrabold tracking-tight tnum sm:text-5xl">
-          {hydrated ? <Money amount={balance} currency={currency} colorize={balance < 0} /> : <span className="opacity-30">…</span>}
+        <div className="mt-1 break-words font-display text-4xl font-extrabold tracking-tight tnum sm:text-5xl">
+          {hydrated ? <Money amount={balance} currency={currency} colorize={balance < 0} compact /> : <span className="opacity-30">…</span>}
         </div>
-        <div className="mt-3 inline-flex items-center gap-4 rounded-full bg-bg-2 px-4 py-2 text-sm">
-          <span className="flex items-center gap-1.5 text-positive"><IconArrowDown size={15} /> <Money amount={totalIncome} currency={currency} /></span>
+        <div className="mt-3 inline-flex max-w-full items-center gap-3 rounded-full bg-bg-2 px-4 py-2 text-sm">
+          <span className="flex items-center gap-1.5 text-positive"><IconArrowDown size={15} /> <Money amount={totalIncome} currency={currency} compact /></span>
           <span className="h-4 w-px bg-ink/10" />
-          <span className="flex items-center gap-1.5 text-negative"><IconArrowUp size={15} /> <Money amount={totalExpense} currency={currency} /></span>
+          <span className="flex items-center gap-1.5 text-negative"><IconArrowUp size={15} /> <Money amount={totalExpense} currency={currency} compact /></span>
         </div>
       </motion.div>
 

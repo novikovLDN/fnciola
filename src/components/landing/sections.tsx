@@ -251,7 +251,7 @@ export function Footer() {
         <div>
           <Logo />
           <p className="mt-4 max-w-xs text-sm text-muted">
-            Технологичный учёт личных финансов и метрик бизнеса. Продукт МХОЛД.
+            Технологичный учёт личных финансов и метрик бизнеса. Продукт Atlas Secure.
           </p>
         </div>
         <nav className="flex gap-12 text-sm">
@@ -269,7 +269,7 @@ export function Footer() {
         </nav>
       </div>
       <div className="mx-auto mt-10 max-w-6xl border-t border-ink/8 pt-6 text-center text-xs text-muted">
-        © {new Date().getFullYear()} МХОЛД · Holdy
+        © {new Date().getFullYear()} Atlas Secure · Holdy
       </div>
     </footer>
   );

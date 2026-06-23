@@ -6,6 +6,7 @@ import { useLedger, type Direction } from '@/lib/store/useLedger';
 import { parseMajorToMinor, formatMoney } from '@/lib/money';
 import { categoriesFor, getCategory } from '@/config/categories';
 import { IconPlus, IconArrowDown, IconArrowUp } from '@/components/icons';
+import { DatePicker } from '@/components/ui/DatePicker';
 
 /**
  * Крупная панель быстрого добавления операции (простой режим):
@@ -116,8 +117,8 @@ export function AddPanel({ onAdded }: { onAdded?: () => void }) {
 
       {/* Дата + заметка */}
       <div className="mt-5 grid gap-2 sm:grid-cols-2">
-        <input type="date" value={date} onChange={(e) => setDate(e.target.value)} aria-label="Дата" className="rounded-full border border-ink/10 bg-bg-2 px-4 py-2.5 text-sm outline-none" />
-        <input value={note} onChange={(e) => setNote(e.target.value)} placeholder="Заметка (необязательно)" aria-label="Заметка" className="rounded-full border border-ink/10 bg-bg-2 px-4 py-2.5 text-sm outline-none placeholder:text-muted" />
+        <DatePicker value={date} onChange={setDate} ariaLabel="Дата операции" />
+        <input value={note} onChange={(e) => setNote(e.target.value)} placeholder="Заметка (необязательно)" aria-label="Заметка" className="rounded-2xl border border-ink/10 bg-bg-2 px-4 py-2.5 text-sm outline-none placeholder:text-muted" />
       </div>
 
       <button

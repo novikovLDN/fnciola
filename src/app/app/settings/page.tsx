@@ -1,13 +1,22 @@
 'use client';
 
+import { useState } from 'react';
 import { Item, PageHeader } from '@/components/cabinet/ui';
+import { Select } from '@/components/ui/Select';
 import { SUPPORTED_CURRENCY_CODES, getCurrency } from '@/lib/currencies';
 import { PLANS, pricePerMonthMinor, CURRENCY_PLANS } from '@/config/plans';
 import { formatMoney } from '@/lib/money';
 import { NotificationsCard } from './NotificationsCard';
+import { IconKey } from '@/components/icons';
 
 /** Настройки (§15.2): профиль, валюта, passkeys, пароль, уведомления, подписка. */
 export default function SettingsPage() {
+  const [currency, setCurrency] = useState('RUB');
+  const currencyOptions = SUPPORTED_CURRENCY_CODES.map((code) => {
+    const c = getCurrency(code);
+    return { value: code, label: `${c.code} — ${c.name}`, hint: c.symbol };
+  });
+
   return (
     <div className="space-y-4">
       <PageHeader title="Настройки" />
@@ -17,17 +26,12 @@ export default function SettingsPage() {
           <h2 className="font-display text-lg font-semibold">Профиль</h2>
           <label className="block max-w-sm">
             <span className="text-sm text-muted">Email</span>
-            <input className="mt-1.5 w-full rounded-full border border-ink/10 bg-bg-2 px-4 py-2.5 text-sm outline-none" defaultValue="user@example.com" readOnly />
+            <input className="mt-1.5 w-full rounded-2xl border border-ink/10 bg-bg-2 px-4 py-2.5 text-sm outline-none" defaultValue="user@example.com" readOnly />
           </label>
-          <label className="block max-w-sm">
-            <span className="text-sm text-muted">Валюта отображения (§8)</span>
-            <select className="mt-1.5 w-full rounded-full border border-ink/10 bg-bg-2 px-4 py-2.5 text-sm outline-none" defaultValue="RUB">
-              {SUPPORTED_CURRENCY_CODES.map((code) => {
-                const c = getCurrency(code);
-                return <option key={code} value={code} className="bg-bg-2">{c.code} — {c.name}</option>;
-              })}
-            </select>
-          </label>
+          <div className="block max-w-sm">
+            <span className="text-sm text-muted">Валюта отображения</span>
+            <Select className="mt-1.5" value={currency} onChange={setCurrency} options={currencyOptions} ariaLabel="Валюта отображения" />
+          </div>
         </section>
       </Item>
 
@@ -39,7 +43,7 @@ export default function SettingsPage() {
               <div className="font-medium">Passkey (Face ID / Touch ID)</div>
               <div className="text-sm text-muted">Вход без пароля по WebAuthn (§11.2).</div>
             </div>
-            <button className="btn btn-glass">Привязать passkey</button>
+            <button className="btn btn-secondary"><IconKey size={16} /> Привязать passkey</button>
           </div>
           <div className="flex flex-wrap items-center justify-between gap-2 border-t border-ink/8 pt-3">
             <div>
@@ -59,7 +63,7 @@ export default function SettingsPage() {
           <span className="badge bg-positive/15 text-positive">Текущий план: Free — всё включено на MVP</span>
           <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
             {PLANS.map((p) => (
-              <div key={p.id} className={`rounded-bento border p-4 ${p.popular ? 'border-violet/40 ring-gradient' : 'border-ink/10'}`}>
+              <div key={p.id} className={`flex flex-col rounded-3xl border p-4 ${p.popular ? 'border-accent/40 ring-gradient' : 'border-ink/10'}`}>
                 <div className="text-sm font-medium">{p.title}</div>
                 <div className="metric-value mt-1 text-xl">{formatMoney(p.priceMinor, CURRENCY_PLANS)}</div>
                 <div className="text-xs text-muted">{formatMoney(pricePerMonthMinor(p), CURRENCY_PLANS)}/мес</div>

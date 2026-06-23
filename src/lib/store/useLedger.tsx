@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useEffect, useMemo, useState, useCallback } from 'react';
 import { add, sum, type Minor } from '@/lib/money';
+import type { EntryKind, ExpenseGroup, Recurrence } from '@/lib/metrics';
 
 /**
  * Демо-леджер: реальное локальное состояние (localStorage), стартует ПУСТЫМ.
@@ -29,20 +30,52 @@ export interface Tx {
   createdAt: number;
 }
 
+export interface Project {
+  id: string;
+  name: string;
+  currency: string;
+  cashBalance: Minor; // текущий остаток средств (для runway)
+  createdAt: number;
+}
+
+export interface ProjectEntryRow {
+  id: string;
+  projectId: string;
+  kind: EntryKind;
+  expenseGroup?: ExpenseGroup | null;
+  amount: Minor;
+  recurrence: Recurrence;
+  startDate: string;
+  endDate?: string | null;
+  note?: string;
+  createdAt: number;
+}
+
 interface LedgerState {
   accounts: Account[];
   txs: Tx[];
+  projects: Project[];
+  entries: ProjectEntryRow[];
 }
+
+const EMPTY: LedgerState = { accounts: [], txs: [], projects: [], entries: [] };
 
 interface LedgerContextValue extends LedgerState {
   hydrated: boolean;
   currency: string;
-  // действия
+  // операции
   addTx: (input: Omit<Tx, 'id' | 'createdAt'>) => void;
   deleteTx: (id: string) => void;
   addAccount: (name: string, currency?: string) => Account;
   reset: () => void;
   seedSample: () => void;
+  // проекты
+  addProject: (name: string, currency?: string) => Project;
+  deleteProject: (id: string) => void;
+  setProjectCash: (id: string, cashBalance: Minor) => void;
+  addEntry: (input: Omit<ProjectEntryRow, 'id' | 'createdAt'>) => void;
+  deleteEntry: (id: string) => void;
+  entriesOf: (projectId: string) => ProjectEntryRow[];
   // селекторы
   balance: Minor;
   totalIncome: Minor;
@@ -60,19 +93,24 @@ function uid(): string {
 }
 
 function load(): LedgerState {
-  if (typeof window === 'undefined') return { accounts: [], txs: [] };
+  if (typeof window === 'undefined') return EMPTY;
   try {
     const raw = window.localStorage.getItem(KEY);
-    if (!raw) return { accounts: [], txs: [] };
-    const parsed = JSON.parse(raw) as LedgerState;
-    return { accounts: parsed.accounts ?? [], txs: parsed.txs ?? [] };
+    if (!raw) return EMPTY;
+    const parsed = JSON.parse(raw) as Partial<LedgerState>;
+    return {
+      accounts: parsed.accounts ?? [],
+      txs: parsed.txs ?? [],
+      projects: parsed.projects ?? [],
+      entries: parsed.entries ?? [],
+    };
   } catch {
-    return { accounts: [], txs: [] };
+    return EMPTY;
   }
 }
 
 export function LedgerProvider({ children }: { children: React.ReactNode }) {
-  const [state, setState] = useState<LedgerState>({ accounts: [], txs: [] });
+  const [state, setState] = useState<LedgerState>(EMPTY);
   const [hydrated, setHydrated] = useState(false);
 
   // Гидратация из localStorage только на клиенте (без mismatch).
@@ -120,7 +158,34 @@ export function LedgerProvider({ children }: { children: React.ReactNode }) {
     return acc;
   }, []);
 
-  const reset = useCallback(() => setState({ accounts: [], txs: [] }), []);
+  const reset = useCallback(() => setState(EMPTY), []);
+
+  const addProject = useCallback<LedgerContextValue['addProject']>((name, currency = DEFAULT_CURRENCY) => {
+    const p: Project = { id: uid(), name, currency, cashBalance: 0, createdAt: Date.now() };
+    setState((prev) => ({ ...prev, projects: [...prev.projects, p] }));
+    return p;
+  }, []);
+
+  const deleteProject = useCallback<LedgerContextValue['deleteProject']>((id) => {
+    setState((prev) => ({
+      ...prev,
+      projects: prev.projects.filter((p) => p.id !== id),
+      entries: prev.entries.filter((e) => e.projectId !== id),
+    }));
+  }, []);
+
+  const setProjectCash = useCallback<LedgerContextValue['setProjectCash']>((id, cashBalance) => {
+    setState((prev) => ({ ...prev, projects: prev.projects.map((p) => (p.id === id ? { ...p, cashBalance } : p)) }));
+  }, []);
+
+  const addEntry = useCallback<LedgerContextValue['addEntry']>((input) => {
+    const e: ProjectEntryRow = { ...input, id: uid(), createdAt: Date.now() };
+    setState((prev) => ({ ...prev, entries: [...prev.entries, e] }));
+  }, []);
+
+  const deleteEntry = useCallback<LedgerContextValue['deleteEntry']>((id) => {
+    setState((prev) => ({ ...prev, entries: prev.entries.filter((e) => e.id !== id) }));
+  }, []);
 
   const seedSample = useCallback(() => {
     const acc: Account = { id: uid(), name: 'Карта', currency: DEFAULT_CURRENCY, createdAt: Date.now() };
@@ -137,7 +202,7 @@ export function LedgerProvider({ children }: { children: React.ReactNode }) {
       { id: uid(), accountId: acc.id, direction: 'expense', amountMinor: 250000, categoryKey: 'transport', occurredAt: d(3), note: 'Такси', createdAt: Date.now() },
       { id: uid(), accountId: acc.id, direction: 'income', amountMinor: 3500000, categoryKey: 'freelance', occurredAt: d(1), note: 'Подработка', createdAt: Date.now() },
     ];
-    setState({ accounts: [acc], txs });
+    setState((prev) => ({ ...prev, accounts: [acc], txs }));
   }, []);
 
   const value = useMemo<LedgerContextValue>(() => {
@@ -156,6 +221,8 @@ export function LedgerProvider({ children }: { children: React.ReactNode }) {
       return b;
     };
 
+    const entriesOf = (projectId: string) => state.entries.filter((e) => e.projectId === projectId);
+
     return {
       ...state,
       hydrated,
@@ -165,12 +232,18 @@ export function LedgerProvider({ children }: { children: React.ReactNode }) {
       addAccount,
       reset,
       seedSample,
+      addProject,
+      deleteProject,
+      setProjectCash,
+      addEntry,
+      deleteEntry,
+      entriesOf,
       balance,
       totalIncome,
       totalExpense,
       accountBalance,
     };
-  }, [state, hydrated, addTx, deleteTx, addAccount, reset, seedSample]);
+  }, [state, hydrated, addTx, deleteTx, addAccount, reset, seedSample, addProject, deleteProject, setProjectCash, addEntry, deleteEntry]);
 
   return <LedgerContext.Provider value={value}>{children}</LedgerContext.Provider>;
 }

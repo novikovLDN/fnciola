@@ -1,14 +1,18 @@
 import type { Metadata, Viewport } from 'next';
-import { Manrope, Inter } from 'next/font/google';
+import { Inter } from 'next/font/google';
+import localFont from 'next/font/local';
 import './globals.css';
 import { LiveBackground } from '@/components/visual/LiveBackground';
 
-// Display — чистый геометрический гротеск (кириллица), плотные начертания.
-const manrope = Manrope({
-  subsets: ['latin', 'cyrillic'],
+// Display — MTS Wide: широкий технологичный гротеск (кириллица), Medium + Bold.
+const mtsWide = localFont({
+  src: [
+    { path: '../fonts/MTSWide-Medium.ttf', weight: '500', style: 'normal' },
+    { path: '../fonts/MTSWide-Bold.ttf', weight: '700', style: 'normal' },
+  ],
   variable: '--font-display',
-  weight: ['500', '600', '700', '800'],
   display: 'swap',
+  fallback: ['system-ui', 'sans-serif'],
 });
 
 // Numeric/UI — Inter: надёжные tabular-nums для денежных значений.
@@ -35,7 +39,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ru" className={`${inter.variable} ${manrope.variable}`}>
+    <html lang="ru" className={`${inter.variable} ${mtsWide.variable}`}>
       <body>
         <LiveBackground />
         {children}

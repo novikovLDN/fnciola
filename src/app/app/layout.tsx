@@ -1,11 +1,23 @@
+import type { Viewport } from 'next';
 import { CabinetSidebar, CabinetBottomBar } from '@/components/cabinet/CabinetNav';
 import { LedgerProvider } from '@/lib/store/useLedger';
+
+// В мини-приложении запрещаем масштабирование жестами (мешает работе).
+// Лендинг остаётся масштабируемым (доступность) — это переопределение только для /app.
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  minimumScale: 1,
+  userScalable: false,
+  viewportFit: 'cover',
+};
 
 /** Каркас кабинета: стеклянная боковая навигация + светлый детализированный фон. */
 export default function CabinetLayout({ children }: { children: React.ReactNode }) {
   return (
     <LedgerProvider>
-      <div className="relative flex min-h-screen">
+      <div className="relative flex min-h-screen" style={{ touchAction: 'pan-x pan-y' }}>
       {/* Детализированный фон кабинета */}
       <div aria-hidden className="pointer-events-none fixed inset-0 -z-10">
         <div

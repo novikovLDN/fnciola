@@ -20,10 +20,18 @@ function fmt(s: string) {
 
 export function DatePicker({ value, onChange, ariaLabel = 'Дата', className = '' }: { value: string; onChange: (v: string) => void; ariaLabel?: string; className?: string }) {
   const [open, setOpen] = useState(false);
+  const [alignRight, setAlignRight] = useState(false);
   const [view, setView] = useState(() => parse(value));
   const ref = useRef<HTMLDivElement>(null);
+  const btnRef = useRef<HTMLButtonElement>(null);
 
-  useEffect(() => { if (open) setView(parse(value)); }, [open, value]);
+  useEffect(() => {
+    if (!open) return;
+    setView(parse(value));
+    // Если справа не хватает места под календарь (~308px) — выравниваем по правому краю.
+    const rect = btnRef.current?.getBoundingClientRect();
+    if (rect) setAlignRight(rect.left + 308 > window.innerWidth - 8);
+  }, [open, value]);
 
   useEffect(() => {
     if (!open) return;
@@ -51,6 +59,7 @@ export function DatePicker({ value, onChange, ariaLabel = 'Дата', className 
   return (
     <div ref={ref} className={`relative ${className}`}>
       <button
+        ref={btnRef}
         type="button"
         onClick={() => setOpen((v) => !v)}
         aria-label={ariaLabel}
@@ -69,7 +78,7 @@ export function DatePicker({ value, onChange, ariaLabel = 'Дата', className 
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -8, scale: 0.97 }}
             transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
-            className="glass absolute z-50 mt-2 w-[19rem] max-w-[calc(100vw-2rem)] rounded-3xl p-4 shadow-[0_24px_60px_-24px_rgba(17,17,19,0.45)]"
+            className={`glass absolute z-50 mt-2 w-[19rem] max-w-[calc(100vw-2rem)] rounded-3xl p-4 shadow-[0_24px_60px_-24px_rgba(17,17,19,0.45)] ${alignRight ? 'right-0' : 'left-0'}`}
           >
             {/* Шапка месяца */}
             <div className="mb-3 flex items-center justify-between">

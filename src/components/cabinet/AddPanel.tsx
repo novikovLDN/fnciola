@@ -50,9 +50,9 @@ export function AddPanel({ onAdded }: { onAdded?: () => void }) {
   const accent = direction === 'income' ? 'var(--positive)' : 'var(--accent)';
 
   return (
-    <div className="card relative overflow-hidden">
+    <div className="card relative">
       {/* Переключатель доход/расход */}
-      <div className="relative mb-5 grid grid-cols-2 rounded-full bg-bg-2 p-1 text-sm font-semibold">
+      <div className="relative mb-5 grid grid-cols-2 overflow-hidden rounded-full bg-bg-2 p-1 text-sm font-semibold">
         <motion.div
           layout
           className="absolute inset-y-1 w-1/2 rounded-full"

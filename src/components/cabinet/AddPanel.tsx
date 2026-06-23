@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLedger, type Direction } from '@/lib/store/useLedger';
-import { parseMajorToMinor, formatMoney } from '@/lib/money';
+import { parseMajorToMinor, formatMoney, groupAmountInput } from '@/lib/money';
 import { categoriesFor, getCategory } from '@/config/categories';
 import { IconPlus, IconArrowDown, IconArrowUp } from '@/components/icons';
 import { DatePicker } from '@/components/ui/DatePicker';
@@ -70,15 +70,16 @@ export function AddPanel({ onAdded }: { onAdded?: () => void }) {
       {/* Большое поле суммы */}
       <div className="relative flex flex-col items-center py-4">
         <span className="label mb-2">Сумма</span>
-        <div className="flex items-baseline gap-2">
+        <div className="flex w-full max-w-[300px] items-baseline justify-center gap-2">
           <input
             inputMode="decimal"
-            value={raw}
-            onChange={(e) => setRaw(e.target.value.replace(/[^\d.,\s]/g, ''))}
+            value={groupAmountInput(raw)}
+            onChange={(e) => setRaw(e.target.value.replace(/\s/g, '').replace(/[^\d.,]/g, ''))}
             onKeyDown={(e) => e.key === 'Enter' && submit()}
             placeholder="0"
             aria-label="Сумма"
-            className="w-full max-w-[8ch] bg-transparent text-center font-display text-5xl font-extrabold tnum tracking-tight outline-none placeholder:text-ink/20 sm:text-6xl"
+            size={1}
+            className="min-w-0 max-w-full flex-1 bg-transparent text-center font-display text-4xl font-extrabold tnum tracking-tight outline-none placeholder:text-ink/20 sm:text-5xl"
             style={{ color: valid ? `rgb(${accent})` : undefined }}
           />
           <span className="font-display text-2xl font-bold text-muted">₽</span>

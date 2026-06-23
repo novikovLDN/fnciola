@@ -91,6 +91,20 @@ export function parseMajorToMinor(input: string | number, currency: string): Min
   return roundHalfUp(value * factor);
 }
 
+/**
+ * Группировка разрядов для живого ввода суммы: "85655" → "85 655",
+ * "1234567,8" → "1 234 567,8". Возвращает строку для отображения в поле ввода;
+ * для парсинга используйте «сырое» значение (parseMajorToMinor сам убирает пробелы).
+ */
+export function groupAmountInput(raw: string): string {
+  if (!raw) return '';
+  const cleaned = raw.replace(/\s/g, '').replace(/[^\d.,]/g, '');
+  const m = cleaned.match(/^(\d*)([.,]?)(\d*)/);
+  if (!m) return cleaned;
+  const intPart = m[1].replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+  return intPart + m[2] + m[3];
+}
+
 /** Перевод минорных единиц в мажорное число (для расчётов отображения). */
 export function minorToMajorNumber(amountMinor: Minor, currency: string): number {
   assertInteger(amountMinor, 'minorToMajorNumber');

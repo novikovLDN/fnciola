@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useLedger } from '@/lib/store/useLedger';
-import { parseMajorToMinor } from '@/lib/money';
+import { parseMajorToMinor, groupAmountInput } from '@/lib/money';
 import type { EntryKind, ExpenseGroup, Recurrence } from '@/lib/metrics';
 import { Select } from '@/components/ui/Select';
 import { DatePicker } from '@/components/ui/DatePicker';
@@ -73,8 +73,8 @@ export function ProjectEntryForm({ projectId, currency }: { projectId: string; c
           <span className="text-xs text-muted">Сумма, {currency}</span>
           <input
             inputMode="decimal"
-            value={raw}
-            onChange={(e) => setRaw(e.target.value.replace(/[^\d.,\s]/g, ''))}
+            value={groupAmountInput(raw)}
+            onChange={(e) => setRaw(e.target.value.replace(/\s/g, '').replace(/[^\d.,]/g, ''))}
             placeholder="0"
             className="mt-1 w-full rounded-2xl border border-ink/10 bg-bg-2 px-4 py-2.5 text-sm tnum outline-none focus:border-accent"
           />

@@ -27,7 +27,7 @@ export function Popover({
   align?: 'start' | 'end';
 }) {
   const popRef = useRef<HTMLDivElement>(null);
-  const [pos, setPos] = useState<{ top: number; left: number; width?: number; placement: 'top' | 'bottom' } | null>(null);
+  const [pos, setPos] = useState<{ top: number; left: number; width?: number; maxHeight: number; placement: 'top' | 'bottom' } | null>(null);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => setMounted(true), []);
@@ -43,16 +43,26 @@ export function Popover({
       let left = align === 'end' ? r.right - w : r.left;
       left = Math.max(margin, Math.min(left, vw - w - margin));
 
-      const popH = popRef.current?.offsetHeight ?? 320;
-      const spaceBelow = vh - r.bottom;
-      const placement: 'top' | 'bottom' = spaceBelow < popH + margin && r.top > spaceBelow ? 'top' : 'bottom';
-      const top = placement === 'bottom' ? r.bottom + 6 : r.top - popH - 6;
-      setPos({ top, left, width: w, placement });
+      // Реальная высота поповера (после отрисовки), иначе оценка.
+      const popH = popRef.current?.offsetHeight || 320;
+      const spaceBelow = vh - r.bottom - margin;
+      const spaceAbove = r.top - margin;
+      // Размещаем там, где больше места; ограничиваем высоту доступным.
+      const placement: 'top' | 'bottom' = spaceBelow >= popH || spaceBelow >= spaceAbove ? 'bottom' : 'top';
+      const maxHeight = Math.max(180, Math.min(popH, placement === 'bottom' ? spaceBelow : spaceAbove));
+
+      let top = placement === 'bottom' ? r.bottom + 6 : r.top - Math.min(popH, maxHeight) - 6;
+      // Финальный прижим в пределах экрана — поповер всегда виден целиком.
+      top = Math.max(margin, Math.min(top, vh - Math.min(popH, maxHeight) - margin));
+      setPos({ top, left, width: w, maxHeight, placement });
     };
     compute();
+    // Повторный замер после отрисовки (когда стала известна реальная высота).
+    const raf = requestAnimationFrame(compute);
     window.addEventListener('scroll', compute, true);
     window.addEventListener('resize', compute);
     return () => {
+      cancelAnimationFrame(raf);
       window.removeEventListener('scroll', compute, true);
       window.removeEventListener('resize', compute);
     };
@@ -85,8 +95,8 @@ export function Popover({
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: pos?.placement === 'top' ? 6 : -6, scale: 0.98 }}
           transition={{ duration: 0.16, ease: [0.22, 1, 0.36, 1] }}
-          style={{ position: 'fixed', top: pos?.top ?? -9999, left: pos?.left ?? -9999, width: pos?.width }}
-          className="z-[100]"
+          style={{ position: 'fixed', top: pos?.top ?? -9999, left: pos?.left ?? -9999, width: pos?.width, maxHeight: pos?.maxHeight, overflowY: 'auto' }}
+          className="z-[100] overscroll-contain"
         >
           {children}
         </motion.div>

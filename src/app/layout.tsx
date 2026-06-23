@@ -1,34 +1,33 @@
 import type { Metadata, Viewport } from 'next';
-import { Inter, Unbounded } from 'next/font/google';
+import { Geologica, Inter } from 'next/font/google';
 import './globals.css';
+import { LiveBackground } from '@/components/visual/LiveBackground';
 
-// Шрифты §14.4 (Google Fonts, кириллица, бесплатные)
+// Display — плотный, широкий, технологичный гротеск (кириллица), тяжёлые начертания.
+const geologica = Geologica({
+  subsets: ['latin', 'cyrillic'],
+  variable: '--font-display',
+  weight: ['400', '500', '600', '700', '800', '900'],
+  display: 'swap',
+});
+
+// Numeric/UI — Inter: надёжные tabular-nums для денежных значений.
 const inter = Inter({
   subsets: ['latin', 'cyrillic'],
   variable: '--font-text',
   display: 'swap',
 });
 
-const unbounded = Unbounded({
-  subsets: ['latin', 'cyrillic'],
-  variable: '--font-display',
-  display: 'swap',
-});
-
 export const metadata: Metadata = {
-  title: 'Holdy — личные финансы и бизнес-метрики',
+  title: 'Holdy — деньги под контролем. Личные финансы и метрики бизнеса',
   description:
-    'Holdy — учёт личных финансов и управленческих метрик бизнеса: доходы и расходы, аналитика, импорт выписок, мультивалютность, EBITDA, runway.',
+    'Holdy — технологичный учёт личных финансов и управленческих метрик бизнеса: доходы и расходы, аналитика, импорт выписок, мультивалюта, EBITDA, cash flow, runway.',
   manifest: '/manifest.webmanifest',
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: 'default',
-    title: 'Holdy',
-  },
+  appleWebApp: { capable: true, statusBarStyle: 'black-translucent', title: 'Holdy' },
 };
 
 export const viewport: Viewport = {
-  themeColor: '#101d38',
+  themeColor: '#070814',
   width: 'device-width',
   initialScale: 1,
   viewportFit: 'cover',
@@ -36,8 +35,11 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ru" className={`${inter.variable} ${unbounded.variable}`}>
-      <body>{children}</body>
+    <html lang="ru" className={`${inter.variable} ${geologica.variable}`}>
+      <body>
+        <LiveBackground />
+        {children}
+      </body>
     </html>
   );
 }

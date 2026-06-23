@@ -3,8 +3,8 @@
 import { useEffect, useState } from 'react';
 
 /**
- * Управление web-push (§13.2). Учитывает ограничение iOS: пуши работают только
- * в установленной на главный экран PWA (Safari, iOS ≥ 16.4) — это не баг.
+ * Управление web-push (§13.2). Ограничение iOS: пуши работают только в PWA,
+ * установленной на главный экран (Safari, iOS ≥ 16.4) — это поведение платформы.
  */
 export function NotificationsCard() {
   const [perm, setPerm] = useState<NotificationPermission | 'unsupported'>('default');
@@ -15,7 +15,6 @@ export function NotificationsCard() {
     if (typeof window === 'undefined') return;
     const supported = 'Notification' in window && 'serviceWorker' in navigator;
     setPerm(supported ? Notification.permission : 'unsupported');
-
     const ua = window.navigator.userAgent;
     const ios = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
     const standalone =
@@ -27,32 +26,29 @@ export function NotificationsCard() {
 
   async function enable() {
     if (!('Notification' in window)) return;
-    const result = await Notification.requestPermission();
-    setPerm(result);
-    // В проде: подписка через PushManager + POST /api/push/subscribe (VAPID).
+    setPerm(await Notification.requestPermission());
   }
 
   return (
-    <section className="bento space-y-3">
-      <h2 className="font-display text-lg">Уведомления</h2>
-
+    <section className="card space-y-3">
+      <h2 className="font-display text-lg font-semibold">Уведомления</h2>
       {isIosWeb ? (
-        <div className="flex items-start gap-3 rounded-bento bg-accent-soft/50 p-4 text-sm">
+        <div className="flex items-start gap-3 rounded-bento border border-violet/20 bg-violet/10 p-4 text-sm">
           <span aria-hidden>📲</span>
           <p>
             На iPhone уведомления доступны только после установки приложения:
-            нажмите <strong>«Поделиться» → «На экран „Домой”»</strong>, затем включите уведомления из установленного Holdy.
+            нажмите <strong>«Поделиться» → «На экран „Домой”»</strong>, затем включите уведомления.
           </p>
         </div>
       ) : perm === 'unsupported' ? (
-        <p className="text-sm text-ink/60">Браузер не поддерживает web-push.</p>
+        <p className="text-sm text-muted">Браузер не поддерживает web-push.</p>
       ) : (
-        <div className="flex items-center justify-between flex-wrap gap-2">
-          <div className="text-sm text-ink/60">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="text-sm text-muted">
             Статус: {perm === 'granted' ? 'включены' : perm === 'denied' ? 'запрещены в браузере' : 'выключены'}
             {isStandalone && ' · приложение установлено'}
           </div>
-          <button className="btn-accent" onClick={enable} disabled={perm === 'granted'}>
+          <button className="btn btn-primary" onClick={enable} disabled={perm === 'granted'}>
             {perm === 'granted' ? 'Включены' : 'Включить уведомления'}
           </button>
         </div>

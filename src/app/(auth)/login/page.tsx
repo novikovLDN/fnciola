@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { Field } from '@/components/auth/Field';
 
 /** Вход (§11.2): email + пароль ИЛИ passkey (WebAuthn). */
 export default function LoginPage() {
@@ -10,48 +11,35 @@ export default function LoginPage() {
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
-    // POST /auth/login/password
-    alert('Демо: вход по паролю. В проде — сессия + переход в кабинет.');
+    alert('Демо: вход по паролю.');
   }
-
   async function passkeyLogin() {
-    // POST /auth/login/passkey/challenge → navigator.credentials.get → verify
-    if (!('credentials' in navigator)) {
-      alert('Браузер не поддерживает passkey');
-      return;
-    }
+    if (!('credentials' in navigator)) return alert('Браузер не поддерживает passkey');
     alert('Демо: вход по passkey (WebAuthn / Face ID / Touch ID).');
   }
 
   return (
-    <div className="bento">
-      <h1 className="font-display text-2xl mb-6">Вход в Holdy</h1>
+    <div className="card ring-gradient">
+      <h1 className="font-display text-2xl font-bold">Вход в Holdy</h1>
+      <p className="mt-1 text-sm text-muted">Рады видеть снова</p>
 
-      <button onClick={passkeyLogin} className="btn-primary w-full mb-4">
-        🔑 Войти по passkey (Face ID / Touch ID)
-      </button>
+      <button onClick={passkeyLogin} className="btn btn-primary mt-6 w-full">🔑 Войти по passkey</button>
 
-      <div className="flex items-center gap-3 my-4 text-xs text-ink/40">
-        <div className="h-px bg-black/10 flex-1" /> или по паролю <div className="h-px bg-black/10 flex-1" />
+      <div className="my-5 flex items-center gap-3 text-xs text-muted">
+        <div className="h-px flex-1 bg-white/10" /> или по паролю <div className="h-px flex-1 bg-white/10" />
       </div>
 
       <form onSubmit={submit} className="space-y-4">
-        <label className="block">
-          <span className="text-sm text-ink/70">Email</span>
-          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="mt-1 w-full rounded-pill border border-black/10 bg-bg px-4 py-2.5 text-sm" placeholder="you@example.com" />
-        </label>
-        <label className="block">
-          <span className="text-sm text-ink/70">Пароль</span>
-          <input type="password" value={pwd} onChange={(e) => setPwd(e.target.value)} className="mt-1 w-full rounded-pill border border-black/10 bg-bg px-4 py-2.5 text-sm" />
-        </label>
+        <Field label="Email" type="email" value={email} onChange={setEmail} placeholder="you@example.com" />
+        <Field label="Пароль" type="password" value={pwd} onChange={setPwd} />
         <div className="flex justify-end">
-          <Link href="/recovery" className="text-sm text-accent">Забыли пароль?</Link>
+          <Link href="/recovery" className="text-sm text-cyan hover:underline">Забыли пароль?</Link>
         </div>
-        <button className="btn-accent w-full">Войти</button>
+        <button className="btn btn-glass w-full">Войти</button>
       </form>
 
-      <p className="text-sm text-ink/60 mt-6 text-center">
-        Нет аккаунта? <Link href="/register" className="text-accent font-medium">Создать</Link>
+      <p className="mt-6 text-center text-sm text-muted">
+        Нет аккаунта? <Link href="/register" className="font-medium text-cyan hover:underline">Создать</Link>
       </p>
     </div>
   );

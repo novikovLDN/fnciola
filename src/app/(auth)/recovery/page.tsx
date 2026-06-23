@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { checkPasswordStrength } from '@/lib/password';
+import { Field } from '@/components/auth/Field';
 
 type Step = 'email' | 'code' | 'password';
 
@@ -15,53 +16,33 @@ export default function RecoveryPage() {
   const strength = checkPasswordStrength(pwd);
 
   return (
-    <div className="bento">
-      <h1 className="font-display text-2xl mb-1">Восстановление доступа</h1>
-      <p className="text-sm text-ink/60 mb-6">Сбросьте пароль по коду из письма.</p>
+    <div className="card ring-gradient">
+      <h1 className="font-display text-2xl font-bold">Восстановление</h1>
+      <p className="mt-1 text-sm text-muted">Сбросьте пароль по коду из письма</p>
 
       {step === 'email' && (
-        <form onSubmit={(e) => { e.preventDefault(); setStep('code'); }} className="space-y-4">
-          <Input label="Email" type="email" value={email} onChange={setEmail} placeholder="you@example.com" />
-          <button className="btn-accent w-full">Отправить код</button>
+        <form onSubmit={(e) => { e.preventDefault(); setStep('code'); }} className="mt-6 space-y-4">
+          <Field label="Email" type="email" value={email} onChange={setEmail} placeholder="you@example.com" />
+          <button className="btn btn-primary w-full">Отправить код</button>
         </form>
       )}
       {step === 'code' && (
-        <form onSubmit={(e) => { e.preventDefault(); setStep('password'); }} className="space-y-4">
-          <Input label="Код из письма" inputMode="numeric" value={code} onChange={setCode} placeholder="000000" />
-          <button className="btn-accent w-full">Подтвердить</button>
+        <form onSubmit={(e) => { e.preventDefault(); setStep('password'); }} className="mt-6 space-y-4">
+          <Field label="Код из письма" inputMode="numeric" value={code} onChange={setCode} placeholder="000000" />
+          <button className="btn btn-primary w-full">Подтвердить</button>
         </form>
       )}
       {step === 'password' && (
-        <form onSubmit={(e) => { e.preventDefault(); alert('Демо: пароль обновлён.'); }} className="space-y-4">
-          <Input label="Новый пароль" type="password" value={pwd} onChange={setPwd} />
-          {pwd && <p className="text-xs text-ink/60">Надёжность: {strength.label}</p>}
-          <button className="btn-accent w-full" disabled={!strength.valid}>Сохранить пароль</button>
+        <form onSubmit={(e) => { e.preventDefault(); alert('Демо: пароль обновлён.'); }} className="mt-6 space-y-4">
+          <Field label="Новый пароль" type="password" value={pwd} onChange={setPwd} />
+          {pwd && <p className="text-xs text-muted">Надёжность: {strength.label}</p>}
+          <button className="btn btn-primary w-full" disabled={!strength.valid}>Сохранить пароль</button>
         </form>
       )}
 
-      <p className="text-sm text-ink/60 mt-6 text-center">
-        Вспомнили? <Link href="/login" className="text-accent font-medium">Войти</Link>
+      <p className="mt-6 text-center text-sm text-muted">
+        Вспомнили? <Link href="/login" className="font-medium text-cyan hover:underline">Войти</Link>
       </p>
     </div>
-  );
-}
-
-function Input({
-  label,
-  value,
-  onChange,
-  type = 'text',
-  ...rest
-}: {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-  type?: string;
-} & Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange' | 'value'>) {
-  return (
-    <label className="block">
-      <span className="text-sm text-ink/70">{label}</span>
-      <input {...rest} type={type} value={value} onChange={(e) => onChange(e.target.value)} className="mt-1 w-full rounded-pill border border-black/10 bg-bg px-4 py-2.5 text-sm" />
-    </label>
   );
 }

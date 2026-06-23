@@ -1,22 +1,22 @@
 import type { Config } from 'tailwindcss';
 
-/**
- * Дизайн-токены из §14 ТЗ — палитра «Navy + Digital Lavender».
- * Светлая тема по умолчанию; тёмную на MVP не делаем (§19).
- */
+/** Дизайн-токены «Aurora / Premium Dark». RGB-каналы → поддержка alpha-модификаторов. */
 const config: Config = {
   content: ['./src/**/*.{ts,tsx}'],
   theme: {
     extend: {
       colors: {
-        // Каналы RGB + <alpha-value> → поддержка модификаторов прозрачности.
         bg: 'rgb(var(--bg) / <alpha-value>)',
+        'bg-2': 'rgb(var(--bg-2) / <alpha-value>)',
         surface: 'rgb(var(--surface) / <alpha-value>)',
+        'surface-2': 'rgb(var(--surface-2) / <alpha-value>)',
         ink: 'rgb(var(--ink) / <alpha-value>)',
-        accent: {
-          DEFAULT: 'rgb(var(--accent) / <alpha-value>)',
-          soft: 'rgb(var(--accent-soft) / <alpha-value>)',
-        },
+        muted: 'rgb(var(--muted) / <alpha-value>)',
+        violet: 'rgb(var(--violet) / <alpha-value>)',
+        indigo: 'rgb(var(--indigo) / <alpha-value>)',
+        cyan: 'rgb(var(--cyan) / <alpha-value>)',
+        magenta: 'rgb(var(--magenta) / <alpha-value>)',
+        accent: 'rgb(var(--accent) / <alpha-value>)',
         positive: 'rgb(var(--positive) / <alpha-value>)',
         negative: 'rgb(var(--negative) / <alpha-value>)',
       },
@@ -26,12 +26,22 @@ const config: Config = {
       },
       borderRadius: {
         bento: '1.5rem',
-        pill: '9999px',
+        '2xl': '1rem',
+      },
+      backgroundImage: {
+        'grad-brand': 'linear-gradient(120deg, rgb(var(--violet)), rgb(var(--indigo)) 55%, rgb(var(--cyan)))',
       },
       boxShadow: {
-        // Мягкие тени для «парящих» bento-карточек
-        bento: '0 1px 2px rgba(16,29,56,0.04), 0 8px 24px rgba(16,29,56,0.06)',
-        'bento-hover': '0 2px 4px rgba(16,29,56,0.06), 0 12px 32px rgba(16,29,56,0.10)',
+        glow: '0 0 40px -8px rgb(var(--violet) / 0.45)',
+      },
+      keyframes: {
+        'fade-up': {
+          '0%': { opacity: '0', transform: 'translateY(16px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+      },
+      animation: {
+        'fade-up': 'fade-up 0.6s cubic-bezier(0.22,1,0.36,1) both',
       },
     },
   },

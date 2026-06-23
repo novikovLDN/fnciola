@@ -1,71 +1,67 @@
+'use client';
+
+import { Item, PageHeader } from '@/components/cabinet/ui';
 import { demoAccounts } from '@/lib/demo';
 
 /** Импорт выписок (§9, §15.2): загрузка, статус, отчёт, бета-PDF. */
 export default function ImportPage() {
   return (
-    <div className="space-y-6">
-      <header>
-        <h1 className="font-display text-2xl sm:text-3xl">Импорт выписок</h1>
-        <p className="text-sm text-ink/60">CSV, XLSX, OFX/QFX, MT940, CAMT.053. PDF — в бета-режиме.</p>
-      </header>
+    <div>
+      <PageHeader title="Импорт выписок" subtitle="CSV, XLSX, OFX/QFX, MT940, CAMT.053. PDF — в бете." />
 
-      <div className="bento space-y-4">
-        <div className="grid sm:grid-cols-2 gap-4">
-          <label className="block">
-            <span className="text-sm text-ink/70">Счёт зачисления</span>
-            <select className="mt-1 w-full rounded-pill border border-black/10 bg-bg px-4 py-2.5 text-sm">
-              {demoAccounts.map((a) => <option key={a.id} value={a.id}>{a.name} ({a.currency})</option>)}
-            </select>
-          </label>
-          <label className="block">
-            <span className="text-sm text-ink/70">Формат</span>
-            <select className="mt-1 w-full rounded-pill border border-black/10 bg-bg px-4 py-2.5 text-sm">
-              <option>Определить автоматически</option>
-              <option>CSV</option>
-              <option>XLSX</option>
-              <option>OFX / QFX</option>
-              <option>MT940</option>
-              <option>CAMT.053</option>
-              <option>PDF (бета)</option>
-            </select>
-          </label>
-        </div>
+      <Item>
+        <div className="card space-y-4">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <label className="block">
+              <span className="text-sm text-muted">Счёт зачисления</span>
+              <select className="mt-1.5 w-full rounded-full border border-white/10 bg-white/5 px-4 py-2.5 text-sm outline-none">
+                {demoAccounts.map((a) => <option key={a.id} className="bg-bg-2">{a.name} ({a.currency})</option>)}
+              </select>
+            </label>
+            <label className="block">
+              <span className="text-sm text-muted">Формат</span>
+              <select className="mt-1.5 w-full rounded-full border border-white/10 bg-white/5 px-4 py-2.5 text-sm outline-none">
+                {['Определить автоматически', 'CSV', 'XLSX', 'OFX / QFX', 'MT940', 'CAMT.053', 'PDF (бета)'].map((o) => <option key={o} className="bg-bg-2">{o}</option>)}
+              </select>
+            </label>
+          </div>
 
-        <div className="rounded-bento border-2 border-dashed border-accent/30 bg-accent-soft/20 p-10 text-center">
-          <div className="text-3xl mb-2" aria-hidden>⬆️</div>
-          <p className="text-sm text-ink/70">Перетащите файл выписки сюда или</p>
-          <button className="btn-accent mt-3">Выбрать файл</button>
-          <p className="text-xs text-ink/40 mt-3">Файл удаляется с сервера после обработки (§6).</p>
-        </div>
+          <div className="rounded-bento border-2 border-dashed border-violet/30 bg-violet/5 p-10 text-center transition-colors hover:border-violet/50 hover:bg-violet/10">
+            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-grad-brand text-white shadow-glow">⬆</div>
+            <p className="text-sm text-muted">Перетащите файл выписки сюда или</p>
+            <button className="btn btn-primary mt-3">Выбрать файл</button>
+            <p className="mt-3 text-xs text-muted">Файл удаляется с сервера после обработки (§6).</p>
+          </div>
 
-        {/* Предупреждение для бета-PDF (§9.1) */}
-        <div className="flex items-start gap-3 rounded-bento bg-negative/10 p-4 text-sm">
-          <span aria-hidden>⚠️</span>
-          <p>
-            Импорт PDF и автокатегоризация работают в <strong>бета-режиме</strong> — возможны неточности.
-            Проверьте импортированные операции перед сохранением.
-          </p>
+          <div className="flex items-start gap-3 rounded-bento border border-magenta/20 bg-magenta/10 p-4 text-sm">
+            <span aria-hidden>⚠</span>
+            <p>
+              Импорт PDF и автокатегоризация работают в <strong>бета-режиме</strong> — возможны неточности.
+              Проверьте импортированные операции перед сохранением.
+            </p>
+          </div>
         </div>
-      </div>
+      </Item>
 
-      {/* Отчёт об импорте (§9.3) — пример состояния */}
-      <div className="bento">
-        <h2 className="font-display text-lg mb-4">Последний импорт</h2>
-        <div className="grid grid-cols-3 gap-4 text-center">
-          <Stat label="Импортировано" value="128" className="text-positive" />
-          <Stat label="Дубликаты" value="14" className="text-ink/60" />
-          <Stat label="Ошибки" value="2" className="text-negative" />
+      <Item className="mt-4">
+        <div className="card">
+          <h2 className="mb-4 font-display text-lg font-semibold">Последний импорт</h2>
+          <div className="grid grid-cols-3 gap-4 text-center">
+            <Stat label="Импортировано" value="128" className="text-positive" />
+            <Stat label="Дубликаты" value="14" className="text-muted" />
+            <Stat label="Ошибки" value="2" className="text-negative" />
+          </div>
         </div>
-      </div>
+      </Item>
     </div>
   );
 }
 
 function Stat({ label, value, className = '' }: { label: string; value: string; className?: string }) {
   return (
-    <div className="rounded-bento bg-bg p-4">
+    <div className="rounded-bento border border-white/5 bg-white/[0.03] p-4">
       <div className={`metric-value text-2xl ${className}`}>{value}</div>
-      <div className="text-xs text-ink/50 mt-1">{label}</div>
+      <div className="mt-1 text-xs text-muted">{label}</div>
     </div>
   );
 }

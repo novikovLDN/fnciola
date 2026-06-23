@@ -1,8 +1,8 @@
 import { formatMoney, signOf, type Minor } from '@/lib/money';
 
 /**
- * Денежное значение с семантикой знака — прибыль/убыток различаются НЕ только
- * цветом (§5.2, §14.2): добавляем знак и текстовую подпись для скринридеров.
+ * Денежное значение. Прибыль/убыток различаются НЕ только цветом (доступность):
+ * добавляем стрелку-иконку и скрытую текстовую подпись для скринридеров.
  */
 export function Money({
   amount,
@@ -23,9 +23,9 @@ export function Money({
   const srLabel = sign === 'positive' ? 'доход' : sign === 'negative' ? 'расход' : '';
 
   return (
-    <span className={`money ${colorClass} ${className}`}>
+    <span className={`money whitespace-nowrap ${colorClass} ${className}`}>
       {colorize && sign !== 'zero' && (
-        <span aria-hidden className="mr-0.5">
+        <span aria-hidden className="mr-1 text-[0.7em] align-middle opacity-80">
           {sign === 'positive' ? '▲' : '▼'}
         </span>
       )}

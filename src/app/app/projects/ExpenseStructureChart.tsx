@@ -5,19 +5,9 @@ import { minorToMajorNumber } from '@/lib/money';
 
 /** Структура расходов проекта по группам (§10.3). */
 export function ExpenseStructureChart({
-  cogs,
-  opex,
-  taxes,
-  interest,
-  depreciation,
-  currency,
+  cogs, opex, taxes, interest, depreciation, currency,
 }: {
-  cogs: number;
-  opex: number;
-  taxes: number;
-  interest: number;
-  depreciation: number;
-  currency: string;
+  cogs: number; opex: number; taxes: number; interest: number; depreciation: number; currency: string;
 }) {
   const data = [
     { name: 'COGS', value: minorToMajorNumber(cogs, currency) },
@@ -34,13 +24,12 @@ export function ExpenseStructureChart({
       option={{
         color: CHART_PALETTE,
         tooltip: { trigger: 'item', formatter: '{b}: {c} ({d}%)' },
-        legend: { bottom: 0, type: 'scroll' },
+        legend: { bottom: 0, type: 'scroll', textStyle: { color: '#9A9CB8' } },
         series: [
           {
-            type: 'pie',
-            radius: ['45%', '70%'],
-            itemStyle: { borderRadius: 8, borderColor: '#fff', borderWidth: 2 },
-            label: { show: true, formatter: '{d}%' },
+            type: 'pie', radius: ['52%', '74%'],
+            itemStyle: { borderRadius: 10, borderColor: 'rgba(7,8,20,1)', borderWidth: 3 },
+            label: { show: true, color: '#EDEEF8', formatter: '{d}%' },
             data,
           },
         ],

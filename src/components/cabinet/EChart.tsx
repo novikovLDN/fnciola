@@ -28,5 +28,5 @@ export function EChart({ option, height = 280, ariaLabel }: { option: echarts.EC
   return <div ref={ref} role="img" aria-label={ariaLabel} style={{ height, width: '100%' }} />;
 }
 
-/** Пастельная палитра категорий на основе акцента (§14.3). */
-export const CHART_PALETTE = ['#6C4DF5', '#9B86F8', '#10B981', '#FF6B5A', '#F5A623', '#4DA6F5', '#C4B5FD'];
+/** Неоновая палитра категорий (тёмная тема). */
+export const CHART_PALETTE = ['#7C5CFF', '#3DD6F5', '#2DE0A6', '#FF4D8D', '#5B8DEF', '#F5A623', '#C4B5FD'];

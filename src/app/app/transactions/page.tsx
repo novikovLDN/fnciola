@@ -1,63 +1,61 @@
+'use client';
+
+import { Item, PageHeader } from '@/components/cabinet/ui';
 import { Money } from '@/components/cabinet/Money';
 import { demoTransactions, demoAccounts, DISPLAY_CURRENCY } from '@/lib/demo';
 
-/** Операции (§15.2): список с фильтрами, поиск, добавление. Демо-вид. */
+/** Операции (§15.2): фильтры, поиск, список. */
 export default function TransactionsPage() {
   const accountName = (id: string) => demoAccounts.find((a) => a.id === id)?.name ?? '—';
 
   return (
-    <div className="space-y-6">
-      <header className="flex items-center justify-between flex-wrap gap-2">
-        <h1 className="font-display text-2xl sm:text-3xl">Операции</h1>
-        <button className="btn-accent">+ Добавить</button>
-      </header>
+    <div>
+      <PageHeader title="Операции" action={<button className="btn btn-primary">+ Добавить</button>} />
 
-      {/* Фильтры (§15.2) */}
-      <div className="bento flex flex-wrap gap-2 items-center py-3">
-        <select className="rounded-pill border border-black/10 bg-bg px-4 py-2 text-sm" aria-label="Период" defaultValue="month">
-          <option value="month">Текущий месяц</option>
-          <option value="quarter">Квартал</option>
-          <option value="year">Год</option>
-        </select>
-        <select className="rounded-pill border border-black/10 bg-bg px-4 py-2 text-sm" aria-label="Счёт" defaultValue="">
-          <option value="">Все счета</option>
-          {demoAccounts.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
-        </select>
-        <select className="rounded-pill border border-black/10 bg-bg px-4 py-2 text-sm" aria-label="Тип" defaultValue="">
-          <option value="">Доход и расход</option>
-          <option value="income">Доход</option>
-          <option value="expense">Расход</option>
-        </select>
-        <input className="rounded-pill border border-black/10 bg-bg px-4 py-2 text-sm flex-1 min-w-[160px]" placeholder="Поиск по описанию…" aria-label="Поиск" />
-      </div>
+      <Item>
+        <div className="card mb-4 flex flex-wrap items-center gap-2 py-3">
+          {[
+            { label: 'Период', opts: ['Текущий месяц', 'Квартал', 'Год'] },
+            { label: 'Счёт', opts: ['Все счета', ...demoAccounts.map((a) => a.name)] },
+            { label: 'Тип', opts: ['Доход и расход', 'Доход', 'Расход'] },
+          ].map((f) => (
+            <select key={f.label} aria-label={f.label} className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-ink outline-none">
+              {f.opts.map((o) => <option key={o} className="bg-bg-2">{o}</option>)}
+            </select>
+          ))}
+          <input className="min-w-[160px] flex-1 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm outline-none placeholder:text-muted" placeholder="Поиск по описанию…" aria-label="Поиск" />
+        </div>
+      </Item>
 
-      <div className="bento p-0 overflow-hidden">
-        <table className="w-full text-sm">
-          <thead className="bg-accent-soft/40 text-left text-ink/60">
-            <tr>
-              <th className="px-4 py-3 font-medium">Дата</th>
-              <th className="px-4 py-3 font-medium">Описание</th>
-              <th className="px-4 py-3 font-medium hidden sm:table-cell">Счёт</th>
-              <th className="px-4 py-3 font-medium hidden sm:table-cell">Категория</th>
-              <th className="px-4 py-3 font-medium text-right">Сумма</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-black/5">
-            {demoTransactions.slice().reverse().map((t) => (
-              <tr key={t.id} className="hover:bg-black/[0.02]">
-                <td className="px-4 py-3 whitespace-nowrap tnum">{t.occurredAt}</td>
-                <td className="px-4 py-3">{t.description}</td>
-                <td className="px-4 py-3 hidden sm:table-cell text-ink/60">{accountName(t.accountId)}</td>
-                <td className="px-4 py-3 hidden sm:table-cell"><span className="badge">{t.category}</span></td>
-                <td className="px-4 py-3 text-right whitespace-nowrap">
-                  <Money amount={t.amountDisplayMinor} currency={DISPLAY_CURRENCY} colorize showSign />
-                </td>
+      <Item>
+        <div className="card overflow-hidden p-0">
+          <table className="w-full text-sm">
+            <thead className="border-b border-white/5 text-left text-muted">
+              <tr>
+                <th className="px-4 py-3 font-medium">Дата</th>
+                <th className="px-4 py-3 font-medium">Описание</th>
+                <th className="hidden px-4 py-3 font-medium sm:table-cell">Счёт</th>
+                <th className="hidden px-4 py-3 font-medium sm:table-cell">Категория</th>
+                <th className="px-4 py-3 text-right font-medium">Сумма</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-      <p className="text-xs text-ink/40 text-center">Для длинных списков — пагинация/виртуализация (§5.2).</p>
+            </thead>
+            <tbody>
+              {demoTransactions.slice().reverse().map((t) => (
+                <tr key={t.id} className="border-b border-white/5 transition-colors last:border-0 hover:bg-white/[0.03]">
+                  <td className="whitespace-nowrap px-4 py-3 tnum text-muted">{t.occurredAt}</td>
+                  <td className="px-4 py-3 font-medium">{t.description}</td>
+                  <td className="hidden px-4 py-3 text-muted sm:table-cell">{accountName(t.accountId)}</td>
+                  <td className="hidden px-4 py-3 sm:table-cell"><span className="badge">{t.category}</span></td>
+                  <td className="whitespace-nowrap px-4 py-3 text-right">
+                    <Money amount={t.amountDisplayMinor} currency={DISPLAY_CURRENCY} colorize showSign />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </Item>
+      <p className="mt-3 text-center text-xs text-muted">Для длинных списков — пагинация/виртуализация (§5.2).</p>
     </div>
   );
 }

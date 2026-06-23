@@ -33,5 +33,4 @@ yarn-error.log*
 # testing
 /coverage
 
-# drizzle
-/drizzle/meta
+# drizzle — миграции и журнал коммитим (нужны для drizzle-kit migrate в проде)

@@ -1,9 +1,11 @@
 import { CabinetSidebar, CabinetBottomBar } from '@/components/cabinet/CabinetNav';
+import { LedgerProvider } from '@/lib/store/useLedger';
 
-/** Каркас кабинета: стеклянная боковая навигация + детализированный тёмный фон. */
+/** Каркас кабинета: стеклянная боковая навигация + светлый детализированный фон. */
 export default function CabinetLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="relative flex min-h-screen">
+    <LedgerProvider>
+      <div className="relative flex min-h-screen">
       {/* Детализированный фон кабинета */}
       <div aria-hidden className="pointer-events-none fixed inset-0 -z-10">
         <div
@@ -20,11 +22,12 @@ export default function CabinetLayout({ children }: { children: React.ReactNode 
           style={{ background: 'radial-gradient(circle, rgb(255 138 76 / 0.10), transparent 60%)' }} />
       </div>
 
-      <CabinetSidebar />
-      <div className="min-w-0 flex-1">
-        <main className="mx-auto max-w-5xl px-4 pb-28 pt-6 sm:px-6 lg:pb-12">{children}</main>
+        <CabinetSidebar />
+        <div className="min-w-0 flex-1">
+          <main className="mx-auto max-w-5xl px-4 pb-28 pt-6 sm:px-6 lg:pb-12">{children}</main>
+        </div>
+        <CabinetBottomBar />
       </div>
-      <CabinetBottomBar />
-    </div>
+    </LedgerProvider>
   );
 }

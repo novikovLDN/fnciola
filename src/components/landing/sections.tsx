@@ -139,8 +139,8 @@ export function Pricing() {
 
       <div className="mt-12 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
         {PLANS.map((plan, i) => (
-          <Reveal key={plan.id} delay={i * 0.07}>
-            <div className={`card card-hover relative h-full ${plan.popular ? 'ring-gradient' : ''}`}>
+          <Reveal key={plan.id} delay={i * 0.07} className="h-full">
+            <div className={`card card-hover relative flex h-full flex-col ${plan.popular ? 'ring-gradient' : ''}`}>
               {plan.popular && (
                 <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-grad-brand px-3 py-1 text-xs font-semibold text-white shadow-glow">
                   Выгодный
@@ -149,12 +149,14 @@ export function Pricing() {
               <div className="text-sm text-muted">{plan.title}</div>
               <div className="mt-2 font-display text-3xl font-bold">{formatMoney(plan.priceMinor, CURRENCY_PLANS)}</div>
               <div className="mt-1 text-sm text-muted">{formatMoney(pricePerMonthMinor(plan), CURRENCY_PLANS)} / мес</div>
-              {plan.discountPct > 0 && (
-                <div className="mt-4 inline-flex rounded-full bg-positive/15 px-3 py-1 text-xs font-medium text-positive">
-                  выгода {plan.discountPct}%
-                </div>
-              )}
-              <Link href="/register" className="btn btn-glass mt-6 w-full">Выбрать</Link>
+              <div className="mt-4 h-6">
+                {plan.discountPct > 0 && (
+                  <span className="inline-flex rounded-full bg-positive/15 px-3 py-1 text-xs font-medium text-positive">
+                    выгода {plan.discountPct}%
+                  </span>
+                )}
+              </div>
+              <Link href="/register" className="btn btn-primary mt-6 w-full">Выбрать</Link>
             </div>
           </Reveal>
         ))}

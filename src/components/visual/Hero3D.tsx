@@ -37,13 +37,18 @@ export function Hero3D({ className = '' }: { className?: string }) {
     const envTex = pmrem.fromScene(envScene, 0.04).texture;
     scene.environment = envTex;
 
-    // Хромированный «узел» — текучий металл.
-    const geometry = new THREE.TorusKnotGeometry(1.15, 0.42, 220, 36);
-    const material = new THREE.MeshStandardMaterial({
-      color: new THREE.Color('#cfd2d6'),
+    // Хромированный «узел» — текучий, переливающийся металл (iridescence).
+    const geometry = new THREE.TorusKnotGeometry(1.12, 0.4, 280, 44);
+    const material = new THREE.MeshPhysicalMaterial({
+      color: new THREE.Color('#dfe2e8'),
       metalness: 1,
-      roughness: 0.06,
-      envMapIntensity: 1.4,
+      roughness: 0.14,
+      envMapIntensity: 1.5,
+      clearcoat: 1,
+      clearcoatRoughness: 0.08,
+      iridescence: 1,
+      iridescenceIOR: 1.35,
+      iridescenceThicknessRange: [120, 480],
     });
     const knot = new THREE.Mesh(geometry, material);
     scene.add(knot);
@@ -79,8 +84,13 @@ export function Hero3D({ className = '' }: { className?: string }) {
       const t = clock.getElapsedTime();
       if (!reduce) {
         knot.rotation.y = t * 0.4;
-        knot.rotation.x = Math.sin(t * 0.35) * 0.25;
+        knot.rotation.x = Math.sin(t * 0.35) * 0.3;
+        knot.rotation.z = Math.cos(t * 0.22) * 0.18;
         knot.position.y = Math.sin(t * 0.8) * 0.12;
+        // «Перетекание»: мягкое неравномерное дыхание объёма.
+        const s = 1 + Math.sin(t * 0.9) * 0.05;
+        knot.scale.set(s, 1 + Math.cos(t * 0.7) * 0.05, s);
+        material.iridescenceIOR = 1.3 + Math.sin(t * 0.5) * 0.15;
       }
       camera.position.x += (target.x - camera.position.x) * 0.05;
       camera.position.y += (-target.y - camera.position.y) * 0.05;

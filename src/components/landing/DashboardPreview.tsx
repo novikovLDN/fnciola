@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import * as echarts from 'echarts';
-import { motion, useInView, useReducedMotion } from 'framer-motion';
+import { motion, useInView, useReducedMotion, useScroll, useTransform, useSpring } from 'framer-motion';
 
 /** Живой превью-дашборд с анимированным графиком — «liquid glass». */
 export function DashboardPreview() {
@@ -11,6 +11,15 @@ export function DashboardPreview() {
   const inView = useInView(wrapRef, { once: true, margin: '-60px' });
   const reduce = useReducedMotion();
   const [mounted, setMounted] = useState(false);
+
+  // Скролл-«раскрытие»: из наклона по горизонту в вертикаль лицом к зрителю.
+  const { scrollYProgress } = useScroll({ target: wrapRef, offset: ['start end', 'center center'] });
+  const rxRaw = useTransform(scrollYProgress, [0, 1], [reduce ? 0 : 26, 0]);
+  const yRaw = useTransform(scrollYProgress, [0, 1], [reduce ? 0 : 60, 0]);
+  const opRaw = useTransform(scrollYProgress, [0, 0.6], [reduce ? 1 : 0.4, 1]);
+  const rotateX = useSpring(rxRaw, { stiffness: 120, damping: 24 });
+  const y = useSpring(yRaw, { stiffness: 120, damping: 24 });
+  const opacity = useSpring(opRaw, { stiffness: 120, damping: 24 });
 
   useEffect(() => {
     if (!inView || !chartRef.current) return;
@@ -62,11 +71,7 @@ export function DashboardPreview() {
   return (
     <motion.div
       ref={wrapRef}
-      initial={{ opacity: 0, y: 40, rotateX: 8 }}
-      whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
-      viewport={{ once: true, margin: '-80px' }}
-      transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
-      style={{ transformPerspective: 1200 }}
+      style={{ transformPerspective: 1400, rotateX, y, opacity }}
       className="card ring-gradient relative overflow-hidden"
     >
       <div className="mb-5 flex items-center justify-between">

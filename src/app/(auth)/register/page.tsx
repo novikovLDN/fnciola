@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { checkPasswordStrength } from '@/lib/password';
 import { Field } from '@/components/auth/Field';
@@ -10,6 +11,7 @@ type Step = 'email' | 'code' | 'password';
 
 /** Регистрация (§11.1): email → OTP-код → пароль ×2. */
 export default function RegisterPage() {
+  const router = useRouter();
   const [step, setStep] = useState<Step>('email');
   const [email, setEmail] = useState('');
   const [code, setCode] = useState('');
@@ -32,7 +34,7 @@ export default function RegisterPage() {
     }
     if (!strength.valid) return setError('Пароль слишком короткий (минимум 8 символов)');
     if (pwd !== pwd2) return setError('Пароли не совпадают');
-    alert('Демо: регистрация завершена.');
+    router.push('/app');
   }
 
   return (

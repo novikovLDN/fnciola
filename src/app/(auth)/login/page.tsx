@@ -26,7 +26,7 @@ export default function LoginPage() {
       <button onClick={passkeyLogin} className="btn btn-primary mt-6 w-full">🔑 Войти по passkey</button>
 
       <div className="my-5 flex items-center gap-3 text-xs text-muted">
-        <div className="h-px flex-1 bg-white/10" /> или по паролю <div className="h-px flex-1 bg-white/10" />
+        <div className="h-px flex-1 bg-ink/10" /> или по паролю <div className="h-px flex-1 bg-ink/10" />
       </div>
 
       <form onSubmit={submit} className="space-y-4">

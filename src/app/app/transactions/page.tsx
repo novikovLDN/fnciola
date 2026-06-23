@@ -19,18 +19,18 @@ export default function TransactionsPage() {
             { label: 'Счёт', opts: ['Все счета', ...demoAccounts.map((a) => a.name)] },
             { label: 'Тип', opts: ['Доход и расход', 'Доход', 'Расход'] },
           ].map((f) => (
-            <select key={f.label} aria-label={f.label} className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-ink outline-none">
+            <select key={f.label} aria-label={f.label} className="rounded-full border border-ink/10 bg-bg-2 px-4 py-2 text-sm text-ink outline-none">
               {f.opts.map((o) => <option key={o} className="bg-bg-2">{o}</option>)}
             </select>
           ))}
-          <input className="min-w-[160px] flex-1 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm outline-none placeholder:text-muted" placeholder="Поиск по описанию…" aria-label="Поиск" />
+          <input className="min-w-[160px] flex-1 rounded-full border border-ink/10 bg-bg-2 px-4 py-2 text-sm outline-none placeholder:text-muted" placeholder="Поиск по описанию…" aria-label="Поиск" />
         </div>
       </Item>
 
       <Item>
         <div className="card overflow-hidden p-0">
           <table className="w-full text-sm">
-            <thead className="border-b border-white/5 text-left text-muted">
+            <thead className="border-b border-ink/8 text-left text-muted">
               <tr>
                 <th className="px-4 py-3 font-medium">Дата</th>
                 <th className="px-4 py-3 font-medium">Описание</th>
@@ -41,7 +41,7 @@ export default function TransactionsPage() {
             </thead>
             <tbody>
               {demoTransactions.slice().reverse().map((t) => (
-                <tr key={t.id} className="border-b border-white/5 transition-colors last:border-0 hover:bg-white/[0.03]">
+                <tr key={t.id} className="border-b border-ink/8 transition-colors last:border-0 hover:bg-ink/[0.03]">
                   <td className="whitespace-nowrap px-4 py-3 tnum text-muted">{t.occurredAt}</td>
                   <td className="px-4 py-3 font-medium">{t.description}</td>
                   <td className="hidden px-4 py-3 text-muted sm:table-cell">{accountName(t.accountId)}</td>

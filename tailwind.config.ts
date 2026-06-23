@@ -12,13 +12,14 @@ const config: Config = {
         'surface-2': 'rgb(var(--surface-2) / <alpha-value>)',
         ink: 'rgb(var(--ink) / <alpha-value>)',
         muted: 'rgb(var(--muted) / <alpha-value>)',
-        violet: 'rgb(var(--violet) / <alpha-value>)',
-        indigo: 'rgb(var(--indigo) / <alpha-value>)',
-        cyan: 'rgb(var(--cyan) / <alpha-value>)',
-        magenta: 'rgb(var(--magenta) / <alpha-value>)',
         accent: 'rgb(var(--accent) / <alpha-value>)',
+        'accent-2': 'rgb(var(--accent-2) / <alpha-value>)',
         positive: 'rgb(var(--positive) / <alpha-value>)',
         negative: 'rgb(var(--negative) / <alpha-value>)',
+        // Алиасы на акцент для совместимости со старыми классами.
+        violet: 'rgb(var(--accent) / <alpha-value>)',
+        cyan: 'rgb(var(--accent) / <alpha-value>)',
+        magenta: 'rgb(var(--accent) / <alpha-value>)',
       },
       fontFamily: {
         display: ['var(--font-display)', 'system-ui', 'sans-serif'],
@@ -29,10 +30,10 @@ const config: Config = {
         '2xl': '1rem',
       },
       backgroundImage: {
-        'grad-brand': 'linear-gradient(120deg, rgb(var(--violet)), rgb(var(--indigo)) 55%, rgb(var(--cyan)))',
+        'grad-brand': 'linear-gradient(120deg, rgb(var(--accent)), rgb(var(--accent-2)))',
       },
       boxShadow: {
-        glow: '0 0 40px -8px rgb(var(--violet) / 0.45)',
+        glow: '0 10px 30px -10px rgb(var(--accent) / 0.4)',
       },
       keyframes: {
         'fade-up': {

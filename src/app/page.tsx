@@ -2,7 +2,7 @@ import { Nav } from '@/components/landing/Nav';
 import { Hero } from '@/components/landing/Hero';
 import { DashboardPreview } from '@/components/landing/DashboardPreview';
 import { Reveal } from '@/components/visual/Reveal';
-import { Marquee, Features, MetricsBand, Pricing, Faq, CtaBand, Footer } from '@/components/landing/sections';
+import { Marquee, FeatureStrip, Features, MetricsBand, Pricing, Faq, CtaBand, Footer } from '@/components/landing/sections';
 
 /** Лендинг Holdy — технологичный, тёмно-премиальный, полностью анимированный (§15.1). */
 export default function LandingPage() {
@@ -11,6 +11,7 @@ export default function LandingPage() {
       <Nav />
       <main>
         <Hero />
+        <FeatureStrip />
         <Marquee />
 
         {/* Превью живого дашборда */}

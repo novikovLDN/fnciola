@@ -22,33 +22,33 @@ export function DashboardPreview() {
       animationDuration: reduce ? 0 : 1400,
       animationEasing: 'cubicOut',
       grid: { left: 8, right: 8, top: 16, bottom: 24 },
-      tooltip: { trigger: 'axis', backgroundColor: 'rgba(18,20,38,0.95)', borderColor: 'rgba(124,92,255,0.4)', textStyle: { color: '#EDEEF8' } },
+      tooltip: { trigger: 'axis', backgroundColor: '#ffffff', borderColor: 'rgba(17,17,19,0.1)', textStyle: { color: '#0D0D0F' } },
       xAxis: {
         type: 'category', data: x, boundaryGap: false,
-        axisLine: { lineStyle: { color: 'rgba(255,255,255,0.1)' } },
-        axisLabel: { color: '#9A9CB8' }, axisTick: { show: false },
+        axisLine: { lineStyle: { color: 'rgba(17,17,19,0.12)' } },
+        axisLabel: { color: '#6C6E76' }, axisTick: { show: false },
       },
-      yAxis: { type: 'value', splitLine: { lineStyle: { color: 'rgba(255,255,255,0.05)' } }, axisLabel: { color: '#9A9CB8' } },
+      yAxis: { type: 'value', splitLine: { lineStyle: { color: 'rgba(17,17,19,0.06)' } }, axisLabel: { color: '#6C6E76' } },
       series: [
         {
           name: 'Выручка', type: 'line', smooth: true, symbol: 'none',
           data: [620, 732, 701, 834, 902, 1290],
-          lineStyle: { width: 3, color: '#7C5CFF' },
+          lineStyle: { width: 3, color: '#F24E1E' },
           areaStyle: {
             color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-              { offset: 0, color: 'rgba(124,92,255,0.45)' },
-              { offset: 1, color: 'rgba(124,92,255,0)' },
+              { offset: 0, color: 'rgba(242,78,30,0.28)' },
+              { offset: 1, color: 'rgba(242,78,30,0)' },
             ]),
           },
         },
         {
           name: 'Прибыль', type: 'line', smooth: true, symbol: 'none',
           data: [220, 282, 251, 334, 390, 540],
-          lineStyle: { width: 3, color: '#3DD6F5' },
+          lineStyle: { width: 3, color: '#15A35B' },
           areaStyle: {
             color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-              { offset: 0, color: 'rgba(61,214,245,0.3)' },
-              { offset: 1, color: 'rgba(61,214,245,0)' },
+              { offset: 0, color: 'rgba(21,163,91,0.22)' },
+              { offset: 1, color: 'rgba(21,163,91,0)' },
             ]),
           },
         },
@@ -83,7 +83,7 @@ export function DashboardPreview() {
           { l: 'EBITDA', v: '+ ₽ 1,3М', c: 'text-positive' },
           { l: 'Маржа', v: '23%', c: 'text-cyan' },
         ].map((m) => (
-          <div key={m.l} className="rounded-2xl border border-white/5 bg-white/[0.03] p-3">
+          <div key={m.l} className="rounded-2xl border border-ink/8 bg-bg-2 p-3">
             <div className="text-[10px] uppercase tracking-wider text-muted">{m.l}</div>
             <div className={`font-display text-lg font-semibold tnum ${m.c}`}>{m.v}</div>
           </div>

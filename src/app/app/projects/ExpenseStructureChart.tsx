@@ -24,12 +24,12 @@ export function ExpenseStructureChart({
       option={{
         color: CHART_PALETTE,
         tooltip: { trigger: 'item', formatter: '{b}: {c} ({d}%)' },
-        legend: { bottom: 0, type: 'scroll', textStyle: { color: '#9A9CB8' } },
+        legend: { bottom: 0, type: 'scroll', textStyle: { color: '#6C6E76' } },
         series: [
           {
             type: 'pie', radius: ['52%', '74%'],
-            itemStyle: { borderRadius: 10, borderColor: 'rgba(7,8,20,1)', borderWidth: 3 },
-            label: { show: true, color: '#EDEEF8', formatter: '{d}%' },
+            itemStyle: { borderRadius: 10, borderColor: '#ffffff', borderWidth: 3 },
+            label: { show: true, color: '#0D0D0F', formatter: '{d}%' },
             data,
           },
         ],

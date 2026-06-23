@@ -19,7 +19,7 @@ export function Field({
         type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="mt-1.5 w-full rounded-full border border-white/10 bg-white/5 px-4 py-2.5 text-sm outline-none transition-colors focus:border-violet/50"
+        className="mt-1.5 w-full rounded-full border border-ink/10 bg-bg-2 px-4 py-2.5 text-sm outline-none transition-colors focus:border-violet/50"
       />
     </label>
   );

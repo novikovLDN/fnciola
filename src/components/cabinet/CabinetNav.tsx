@@ -22,7 +22,7 @@ function active(pathname: string, href: string): boolean {
 export function CabinetSidebar() {
   const pathname = usePathname();
   return (
-    <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r border-white/5 bg-bg-2/60 backdrop-blur-xl lg:flex">
+    <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r border-ink/8 bg-bg-2/60 backdrop-blur-xl lg:flex">
       <div className="flex h-16 items-center px-6">
         <Link href="/app"><Logo /></Link>
       </div>
@@ -64,7 +64,7 @@ export function CabinetSidebar() {
 export function CabinetBottomBar() {
   const pathname = usePathname();
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-white/5 bg-bg-2/80 backdrop-blur-xl pb-[env(safe-area-inset-bottom)] lg:hidden">
+    <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-ink/8 bg-bg-2/80 backdrop-blur-xl pb-[env(safe-area-inset-bottom)] lg:hidden">
       <div className="grid grid-cols-5">
         {NAV.slice(0, 5).map((item) => {
           const isActive = active(pathname, item.href);

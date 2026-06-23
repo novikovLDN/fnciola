@@ -106,7 +106,7 @@ function MetricCard({
 
 function Row({ label, value, strong, muted }: { label: string; value: React.ReactNode; strong?: boolean; muted?: boolean }) {
   return (
-    <div className={`flex items-baseline justify-between py-1 ${strong ? 'border-t border-white/5 pt-2 font-semibold' : ''} ${muted ? 'text-muted' : ''}`}>
+    <div className={`flex items-baseline justify-between py-1 ${strong ? 'border-t border-ink/8 pt-2 font-semibold' : ''} ${muted ? 'text-muted' : ''}`}>
       <dt>{label}</dt>
       <dd className="money">{value}</dd>
     </div>

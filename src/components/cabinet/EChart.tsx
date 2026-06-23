@@ -29,4 +29,4 @@ export function EChart({ option, height = 280, ariaLabel }: { option: echarts.EC
 }
 
 /** Неоновая палитра категорий (тёмная тема). */
-export const CHART_PALETTE = ['#7C5CFF', '#3DD6F5', '#2DE0A6', '#FF4D8D', '#5B8DEF', '#F5A623', '#C4B5FD'];
+export const CHART_PALETTE = ['#F24E1E', '#1C1C1E', '#15A35B', '#7B8AFF', '#F4A63A', '#E2403C', '#9CA3AF'];

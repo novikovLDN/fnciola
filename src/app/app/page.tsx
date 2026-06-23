@@ -66,11 +66,11 @@ export default function DashboardPage() {
       <Item className="mt-4">
         <div className="card">
           <h2 className="mb-4 font-display text-lg font-semibold">Последние операции</h2>
-          <ul className="divide-y divide-white/5">
+          <ul className="divide-y divide-ink/8">
             {demoTransactions.slice().reverse().map((t) => (
               <li key={t.id} className="flex items-center justify-between gap-3 py-3">
                 <div className="flex min-w-0 items-center gap-3">
-                  <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-sm ${t.direction === 'income' ? 'bg-positive/15 text-positive' : 'bg-white/5 text-muted'}`}>
+                  <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-sm ${t.direction === 'income' ? 'bg-positive/15 text-positive' : 'bg-bg-2 text-muted'}`}>
                     {t.direction === 'income' ? '↓' : '↑'}
                   </span>
                   <div className="min-w-0">

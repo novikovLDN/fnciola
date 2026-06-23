@@ -14,13 +14,13 @@ export default function ImportPage() {
           <div className="grid gap-4 sm:grid-cols-2">
             <label className="block">
               <span className="text-sm text-muted">Счёт зачисления</span>
-              <select className="mt-1.5 w-full rounded-full border border-white/10 bg-white/5 px-4 py-2.5 text-sm outline-none">
+              <select className="mt-1.5 w-full rounded-full border border-ink/10 bg-bg-2 px-4 py-2.5 text-sm outline-none">
                 {demoAccounts.map((a) => <option key={a.id} className="bg-bg-2">{a.name} ({a.currency})</option>)}
               </select>
             </label>
             <label className="block">
               <span className="text-sm text-muted">Формат</span>
-              <select className="mt-1.5 w-full rounded-full border border-white/10 bg-white/5 px-4 py-2.5 text-sm outline-none">
+              <select className="mt-1.5 w-full rounded-full border border-ink/10 bg-bg-2 px-4 py-2.5 text-sm outline-none">
                 {['Определить автоматически', 'CSV', 'XLSX', 'OFX / QFX', 'MT940', 'CAMT.053', 'PDF (бета)'].map((o) => <option key={o} className="bg-bg-2">{o}</option>)}
               </select>
             </label>
@@ -59,7 +59,7 @@ export default function ImportPage() {
 
 function Stat({ label, value, className = '' }: { label: string; value: string; className?: string }) {
   return (
-    <div className="rounded-bento border border-white/5 bg-white/[0.03] p-4">
+    <div className="rounded-bento border border-ink/8 bg-bg-2 p-4">
       <div className={`metric-value text-2xl ${className}`}>{value}</div>
       <div className="mt-1 text-xs text-muted">{label}</div>
     </div>

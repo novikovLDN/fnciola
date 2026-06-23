@@ -14,7 +14,7 @@ export function Logo({ size = 'md' }: { size?: 'sm' | 'md' }) {
 function Mark() {
   return (
     <span className="relative inline-flex h-8 w-8 items-center justify-center rounded-xl shadow-glow"
-      style={{ background: 'linear-gradient(135deg, rgb(124 92 255), rgb(61 214 245))' }}>
+      style={{ background: 'linear-gradient(135deg, rgb(242 78 30), rgb(255 138 76))' }}>
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
         <path d="M5 4v16M19 4v16M5 12h14" stroke="white" strokeWidth="2.6" strokeLinecap="round" />
       </svg>

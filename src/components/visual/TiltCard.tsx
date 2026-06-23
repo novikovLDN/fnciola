@@ -54,7 +54,7 @@ export function TiltCard({
           style={{
             background: useTransform(
               [sheenX, sheenY],
-              ([x, y]) => `radial-gradient(circle at ${x} ${y}, rgb(124 92 255 / 0.22), transparent 60%)`,
+              ([x, y]) => `radial-gradient(circle at ${x} ${y}, rgb(242 78 30 / 0.16), transparent 60%)`,
             ),
           }}
         />

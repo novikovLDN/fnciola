@@ -17,11 +17,11 @@ export default function SettingsPage() {
           <h2 className="font-display text-lg font-semibold">Профиль</h2>
           <label className="block max-w-sm">
             <span className="text-sm text-muted">Email</span>
-            <input className="mt-1.5 w-full rounded-full border border-white/10 bg-white/5 px-4 py-2.5 text-sm outline-none" defaultValue="user@example.com" readOnly />
+            <input className="mt-1.5 w-full rounded-full border border-ink/10 bg-bg-2 px-4 py-2.5 text-sm outline-none" defaultValue="user@example.com" readOnly />
           </label>
           <label className="block max-w-sm">
             <span className="text-sm text-muted">Валюта отображения (§8)</span>
-            <select className="mt-1.5 w-full rounded-full border border-white/10 bg-white/5 px-4 py-2.5 text-sm outline-none" defaultValue="RUB">
+            <select className="mt-1.5 w-full rounded-full border border-ink/10 bg-bg-2 px-4 py-2.5 text-sm outline-none" defaultValue="RUB">
               {SUPPORTED_CURRENCY_CODES.map((code) => {
                 const c = getCurrency(code);
                 return <option key={code} value={code} className="bg-bg-2">{c.code} — {c.name}</option>;
@@ -41,7 +41,7 @@ export default function SettingsPage() {
             </div>
             <button className="btn btn-glass">Привязать passkey</button>
           </div>
-          <div className="flex flex-wrap items-center justify-between gap-2 border-t border-white/5 pt-3">
+          <div className="flex flex-wrap items-center justify-between gap-2 border-t border-ink/8 pt-3">
             <div>
               <div className="font-medium">Пароль</div>
               <div className="text-sm text-muted">Минимум 8 символов.</div>
@@ -59,7 +59,7 @@ export default function SettingsPage() {
           <span className="badge bg-positive/15 text-positive">Текущий план: Free — всё включено на MVP</span>
           <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
             {PLANS.map((p) => (
-              <div key={p.id} className={`rounded-bento border p-4 ${p.popular ? 'border-violet/40 ring-gradient' : 'border-white/10'}`}>
+              <div key={p.id} className={`rounded-bento border p-4 ${p.popular ? 'border-violet/40 ring-gradient' : 'border-ink/10'}`}>
                 <div className="text-sm font-medium">{p.title}</div>
                 <div className="metric-value mt-1 text-xl">{formatMoney(p.priceMinor, CURRENCY_PLANS)}</div>
                 <div className="text-xs text-muted">{formatMoney(pricePerMonthMinor(p), CURRENCY_PLANS)}/мес</div>

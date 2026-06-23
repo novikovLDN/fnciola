@@ -18,7 +18,7 @@ export function Marquee() {
   const items = ['Личные финансы', 'Бизнес-метрики', 'Импорт выписок', 'Мультивалюта', 'EBITDA & Runway', 'Cash Flow', 'PWA на iOS/Android'];
   const row = [...items, ...items];
   return (
-    <div className="relative overflow-hidden border-y border-white/5 py-5">
+    <div className="relative overflow-hidden border-y border-ink/8 py-5">
       <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-24 bg-gradient-to-r from-bg to-transparent" />
       <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-24 bg-gradient-to-l from-bg to-transparent" />
       <motion.div
@@ -34,6 +34,30 @@ export function Marquee() {
         ))}
       </motion.div>
     </div>
+  );
+}
+
+// --- Полоса ценностей (в духе platacard.mx) --------------------------------
+
+const STRIP = [
+  { h: 'Без абонплаты', t: 'Весь функционал бесплатный на старте' },
+  { h: '14 валют', t: 'Учёт по курсу на дату операции' },
+  { h: '8 метрик', t: 'EBITDA, cash flow, burn rate, runway' },
+  { h: 'Импорт за секунды', t: 'CSV, OFX, MT940, CAMT.053' },
+];
+
+export function FeatureStrip() {
+  return (
+    <section className="mx-auto max-w-6xl px-5 py-12">
+      <div className="grid grid-cols-2 gap-x-6 gap-y-8 lg:grid-cols-4">
+        {STRIP.map((s, i) => (
+          <Reveal key={s.h} delay={i * 0.06}>
+            <div className="font-display text-lg font-extrabold tracking-tight">{s.h}</div>
+            <p className="mt-1.5 text-sm text-muted">{s.t}</p>
+          </Reveal>
+        ))}
+      </div>
+    </section>
   );
 }
 
@@ -201,7 +225,7 @@ export function CtaBand() {
     <section className="mx-auto max-w-6xl px-5 py-16">
       <Reveal>
         <div className="card ring-gradient relative overflow-hidden px-6 py-16 text-center sm:px-12">
-          <div aria-hidden className="absolute inset-0 -z-10 opacity-60" style={{ background: 'radial-gradient(60% 80% at 50% 0%, rgba(124,92,255,0.35), transparent 70%)' }} />
+          <div aria-hidden className="absolute inset-0 -z-10 opacity-60" style={{ background: 'radial-gradient(60% 80% at 50% 0%, rgba(242,78,30,0.28), transparent 70%)' }} />
           <h2 className="mx-auto max-w-2xl font-display text-4xl font-bold tracking-tight sm:text-5xl">
             Возьмите финансы под контроль <span className="text-gradient">сегодня</span>
           </h2>
@@ -220,7 +244,7 @@ export function CtaBand() {
 
 export function Footer() {
   return (
-    <footer className="border-t border-white/5 px-5 py-12">
+    <footer className="border-t border-ink/8 px-5 py-12">
       <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-8 sm:flex-row">
         <div>
           <Logo />
@@ -242,7 +266,7 @@ export function Footer() {
           </div>
         </nav>
       </div>
-      <div className="mx-auto mt-10 max-w-6xl border-t border-white/5 pt-6 text-center text-xs text-muted">
+      <div className="mx-auto mt-10 max-w-6xl border-t border-ink/8 pt-6 text-center text-xs text-muted">
         © {new Date().getFullYear()} МХОЛД · Holdy
       </div>
     </footer>

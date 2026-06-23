@@ -1,13 +1,13 @@
 import type { Metadata, Viewport } from 'next';
-import { Geologica, Inter } from 'next/font/google';
+import { Manrope, Inter } from 'next/font/google';
 import './globals.css';
 import { LiveBackground } from '@/components/visual/LiveBackground';
 
-// Display — плотный, широкий, технологичный гротеск (кириллица), тяжёлые начертания.
-const geologica = Geologica({
+// Display — чистый геометрический гротеск (кириллица), плотные начертания.
+const manrope = Manrope({
   subsets: ['latin', 'cyrillic'],
   variable: '--font-display',
-  weight: ['400', '500', '600', '700', '800', '900'],
+  weight: ['500', '600', '700', '800'],
   display: 'swap',
 });
 
@@ -27,7 +27,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: '#070814',
+  themeColor: '#ffffff',
   width: 'device-width',
   initialScale: 1,
   viewportFit: 'cover',
@@ -35,7 +35,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ru" className={`${inter.variable} ${geologica.variable}`}>
+    <html lang="ru" className={`${inter.variable} ${manrope.variable}`}>
       <body>
         <LiveBackground />
         {children}

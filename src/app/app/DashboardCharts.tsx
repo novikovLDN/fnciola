@@ -23,20 +23,20 @@ export function DashboardCharts() {
           ariaLabel="Динамика доходов и расходов по месяцам"
           option={{
             tooltip: { trigger: 'axis' },
-            legend: { data: ['Доход', 'Расход'], bottom: 0, textStyle: { color: '#9A9CB8' } },
+            legend: { data: ['Доход', 'Расход'], bottom: 0, textStyle: { color: '#6C6E76' } },
             grid: { left: 36, right: 12, top: 12, bottom: 40 },
-            xAxis: { type: 'category', data: ['Фев', 'Мар', 'Апр', 'Май', 'Июн'], boundaryGap: false, axisLabel: { color: '#9A9CB8' }, axisLine: { lineStyle: { color: 'rgba(255,255,255,0.1)' } } },
-            yAxis: { type: 'value', splitLine: { lineStyle: { color: 'rgba(255,255,255,0.05)' } }, axisLabel: { color: '#9A9CB8' } },
+            xAxis: { type: 'category', data: ['Фев', 'Мар', 'Апр', 'Май', 'Июн'], boundaryGap: false, axisLabel: { color: '#6C6E76' }, axisLine: { lineStyle: { color: 'rgba(17,17,19,0.12)' } } },
+            yAxis: { type: 'value', splitLine: { lineStyle: { color: 'rgba(17,17,19,0.06)' } }, axisLabel: { color: '#6C6E76' } },
             series: [
               {
                 name: 'Доход', type: 'line', smooth: true, symbol: 'none', data: [120, 135, 128, 150, 160],
-                lineStyle: { width: 3, color: '#2DE0A6' },
-                areaStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: 'rgba(45,224,166,0.35)' }, { offset: 1, color: 'rgba(45,224,166,0)' }]) },
+                lineStyle: { width: 3, color: '#15A35B' },
+                areaStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: 'rgba(21,163,91,0.28)' }, { offset: 1, color: 'rgba(21,163,91,0)' }]) },
               },
               {
                 name: 'Расход', type: 'line', smooth: true, symbol: 'none', data: [90, 110, 95, 105, 98],
-                lineStyle: { width: 3, color: '#FF5C7C' },
-                areaStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: 'rgba(255,92,124,0.3)' }, { offset: 1, color: 'rgba(255,92,124,0)' }]) },
+                lineStyle: { width: 3, color: '#E2403C' },
+                areaStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: 'rgba(226,64,60,0.24)' }, { offset: 1, color: 'rgba(226,64,60,0)' }]) },
               },
             ],
           }}
@@ -50,12 +50,12 @@ export function DashboardCharts() {
           option={{
             color: CHART_PALETTE,
             tooltip: { trigger: 'item', formatter: '{b}: {c} ₽ ({d}%)' },
-            legend: { bottom: 0, type: 'scroll', textStyle: { color: '#9A9CB8' } },
+            legend: { bottom: 0, type: 'scroll', textStyle: { color: '#6C6E76' } },
             series: [
               {
                 type: 'pie', radius: ['52%', '74%'], avoidLabelOverlap: true,
-                itemStyle: { borderRadius: 10, borderColor: 'rgba(7,8,20,1)', borderWidth: 3 },
-                label: { show: true, color: '#EDEEF8', formatter: '{b}\n{d}%' },
+                itemStyle: { borderRadius: 10, borderColor: '#ffffff', borderWidth: 3 },
+                label: { show: true, color: '#0D0D0F', formatter: '{b}\n{d}%' },
                 data: pieData,
               },
             ],

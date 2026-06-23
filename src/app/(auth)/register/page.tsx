@@ -44,7 +44,7 @@ export default function RegisterPage() {
       {/* Прогресс */}
       <div className="mb-6 flex gap-1.5">
         {[1, 2, 3].map((i) => (
-          <div key={i} className="h-1 flex-1 overflow-hidden rounded-full bg-white/10">
+          <div key={i} className="h-1 flex-1 overflow-hidden rounded-full bg-ink/10">
             <motion.div className="h-full bg-grad-brand" initial={false} animate={{ width: stepNo >= i ? '100%' : '0%' }} transition={{ duration: 0.4 }} />
           </div>
         ))}
@@ -65,7 +65,7 @@ export default function RegisterPage() {
                 <Field label="Пароль" type="password" value={pwd} onChange={setPwd} autoFocus />
                 {pwd && (
                   <div className="text-xs">
-                    <div className="h-1.5 overflow-hidden rounded-full bg-white/10">
+                    <div className="h-1.5 overflow-hidden rounded-full bg-ink/10">
                       <div className="h-full bg-grad-brand transition-all" style={{ width: `${(strength.score / 4) * 100}%` }} />
                     </div>
                     <p className="mt-1 text-muted">Надёжность: {strength.label}{strength.issues.length ? ` · ${strength.issues.join(', ')}` : ''}</p>

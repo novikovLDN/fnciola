@@ -15,6 +15,24 @@ export function generateCode(): string {
   return String(randomInt(0, 1_000_000)).padStart(6, '0');
 }
 
+const RESEND_COOLDOWN_SEC = 60;
+
+/**
+ * Сколько секунд осталось до возможности повторно запросить код для
+ * email+purpose (антиспам: не чаще раза в минуту). 0 — можно прямо сейчас.
+ */
+export async function cooldownRemaining(email: string, purpose: OtpPurpose): Promise<number> {
+  const rows = await db
+    .select({ createdAt: authEmailCodes.createdAt })
+    .from(authEmailCodes)
+    .where(and(eq(authEmailCodes.email, email.toLowerCase()), eq(authEmailCodes.purpose, purpose)))
+    .orderBy(desc(authEmailCodes.createdAt))
+    .limit(1);
+  if (!rows[0]) return 0;
+  const elapsedSec = (Date.now() - new Date(rows[0].createdAt).getTime()) / 1000;
+  return Math.max(0, Math.ceil(RESEND_COOLDOWN_SEC - elapsedSec));
+}
+
 /** Создаёт и сохраняет OTP-код для email+purpose, возвращает «сырой» код для отправки. */
 export async function issueCode(email: string, purpose: OtpPurpose): Promise<string> {
   const code = generateCode();

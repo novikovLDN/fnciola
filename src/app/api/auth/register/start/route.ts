@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { eq } from 'drizzle-orm';
 import { db } from '@/db/client';
 import { users } from '@/db/schema';
-import { issueCode } from '@/lib/auth/otp';
+import { issueCode, cooldownRemaining } from '@/lib/auth/otp';
 import { sendOtpEmail } from '@/lib/auth/email';
 
 export const runtime = 'nodejs';
@@ -21,6 +21,12 @@ export async function POST(req: Request) {
   const existing = await db.select({ id: users.id, hash: users.passwordHash }).from(users).where(eq(users.email, email)).limit(1);
   if (existing[0]?.hash) {
     return NextResponse.json({ error: 'Аккаунт с таким email уже существует. Войдите или восстановите пароль.' }, { status: 409 });
+  }
+
+  // Антиспам: повторный код — не чаще раза в минуту.
+  const retryAfter = await cooldownRemaining(email, 'register');
+  if (retryAfter > 0) {
+    return NextResponse.json({ error: `Код уже отправлен. Повторно — через ${retryAfter} с.`, retryAfter }, { status: 429 });
   }
 
   const code = await issueCode(email, 'register');

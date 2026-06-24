@@ -1,12 +1,18 @@
-import { resendEnv } from '@/lib/env';
-import { isProduction } from '@/lib/env';
+import { resendEnv, isProduction } from '@/lib/env';
 
 /**
  * Отправка OTP-кода на email через Resend.
- * Если RESEND_API_KEY не настроен — в не-проде код логируется в консоль и
- * возвращается флаг devCode, чтобы можно было тестировать без почты.
+ * Если RESEND_API_KEY не настроен — в не-проде код логируется и возвращается
+ * как devCode для теста; в проде это ошибка конфигурации.
+ *
+ * ВАЖНО: resend.emails.send() НЕ бросает исключение при ошибке API — он
+ * возвращает { data, error }. Поэтому проверяем error явно.
  */
-export async function sendOtpEmail(email: string, code: string, purpose: 'register' | 'login' | 'recovery'): Promise<{ sent: boolean; devCode?: string }> {
+export async function sendOtpEmail(
+  email: string,
+  code: string,
+  purpose: 'register' | 'login' | 'recovery',
+): Promise<{ sent: boolean; devCode?: string }> {
   const titles: Record<string, string> = {
     register: 'Подтверждение регистрации в Holdy',
     login: 'Код для входа в Holdy',
@@ -14,7 +20,6 @@ export async function sendOtpEmail(email: string, code: string, purpose: 'regist
   };
 
   if (!process.env.RESEND_API_KEY) {
-    // Не настроено — в деве отдаём код для теста, в проде это ошибка.
     if (isProduction) throw new Error('RESEND_API_KEY не настроен');
     console.log(`[otp] ${purpose} код для ${email}: ${code}`);
     return { sent: false, devCode: code };
@@ -24,13 +29,22 @@ export async function sendOtpEmail(email: string, code: string, purpose: 'regist
   const { Resend } = await import('resend');
   const resend = new Resend(RESEND_API_KEY);
 
-  await resend.emails.send({
+  const { data, error } = await resend.emails.send({
     from: EMAIL_FROM,
-    to: email,
+    to: [email],
     subject: titles[purpose],
     html: renderEmail(code, titles[purpose]),
+    text: `Ваш код Holdy: ${code}. Действует 10 минут.`,
   });
 
+  if (error) {
+    // Логируем настоящую причину (домен не верифицирован, неверный from и т.п.)
+    console.error('[resend] ошибка отправки:', JSON.stringify(error));
+    const detail = (error as { message?: string }).message || 'unknown';
+    throw new Error(`Resend: ${detail}`);
+  }
+
+  console.log(`[resend] письмо отправлено, id=${data?.id} → ${email}`);
   return { sent: true };
 }
 

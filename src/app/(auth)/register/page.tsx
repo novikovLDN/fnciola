@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { checkPasswordStrength } from '@/lib/password';
 import { Field } from '@/components/auth/Field';
+import { ResendCode } from '@/components/auth/ResendCode';
 
 type Step = 'email' | 'code' | 'password';
 
@@ -27,6 +28,21 @@ export default function RegisterPage() {
     const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
     const json = await res.json().catch(() => ({}));
     return { ok: res.ok, json } as { ok: boolean; json: { error?: string; devCode?: string } };
+  }
+
+  // Повторная отправка кода. Возвращает число секунд до следующей попытки.
+  async function resend(): Promise<number> {
+    setError('');
+    setInfo('');
+    const { ok, json } = await post('/api/auth/register/start', { email });
+    if (ok) {
+      if (json.devCode) setInfo(`Тестовый код: ${json.devCode}`);
+      return 60;
+    }
+    const retry = (json as { retryAfter?: number }).retryAfter;
+    if (retry) return retry;
+    setError(json.error || 'Не удалось отправить код');
+    return 60;
   }
 
   async function next(e: React.FormEvent) {
@@ -83,7 +99,10 @@ export default function RegisterPage() {
               <>
                 <p className="text-sm text-muted">Мы отправили 6-значный код на {email}.</p>
                 <Field label="Код из письма" inputMode="numeric" value={code} onChange={(v) => setCode(v.replace(/\D/g, '').slice(0, 6))} placeholder="000000" autoFocus />
-                <button type="button" onClick={() => setStep('email')} className="text-xs text-muted hover:text-ink">Изменить email</button>
+                <div className="flex items-center justify-between">
+                  <button type="button" onClick={() => setStep('email')} className="text-xs text-muted hover:text-ink">Изменить email</button>
+                  <ResendCode onResend={resend} />
+                </div>
               </>
             )}
             {step === 'password' && (

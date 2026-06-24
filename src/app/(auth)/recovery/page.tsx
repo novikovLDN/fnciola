@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { checkPasswordStrength } from '@/lib/password';
 import { Field } from '@/components/auth/Field';
+import { ResendCode } from '@/components/auth/ResendCode';
 
 type Step = 'email' | 'code' | 'password';
 
@@ -24,6 +25,20 @@ export default function RecoveryPage() {
     const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
     const json = await res.json().catch(() => ({}));
     return { ok: res.ok, json } as { ok: boolean; json: { error?: string; devCode?: string } };
+  }
+
+  async function resend(): Promise<number> {
+    setError('');
+    setInfo('');
+    const { ok, json } = await post('/api/auth/recovery/start', { email });
+    if (ok) {
+      if (json.devCode) setInfo(`Тестовый код: ${json.devCode}`);
+      return 60;
+    }
+    const retry = (json as { retryAfter?: number }).retryAfter;
+    if (retry) return retry;
+    setError(json.error || 'Не удалось отправить код');
+    return 60;
   }
 
   async function next(e: React.FormEvent) {
@@ -66,7 +81,15 @@ export default function RecoveryPage() {
 
       <form onSubmit={next} className="mt-6 space-y-4">
         {step === 'email' && <Field label="Email" type="email" value={email} onChange={setEmail} placeholder="you@example.com" autoComplete="email" />}
-        {step === 'code' && <Field label="Код из письма" inputMode="numeric" value={code} onChange={(v) => setCode(v.replace(/\D/g, '').slice(0, 6))} placeholder="000000" />}
+        {step === 'code' && (
+          <>
+            <Field label="Код из письма" inputMode="numeric" value={code} onChange={(v) => setCode(v.replace(/\D/g, '').slice(0, 6))} placeholder="000000" />
+            <div className="flex items-center justify-between">
+              <button type="button" onClick={() => setStep('email')} className="text-xs text-muted hover:text-ink">Изменить email</button>
+              <ResendCode onResend={resend} />
+            </div>
+          </>
+        )}
         {step === 'password' && (
           <>
             <Field label="Новый пароль" type="password" value={pwd} onChange={setPwd} autoComplete="new-password" />

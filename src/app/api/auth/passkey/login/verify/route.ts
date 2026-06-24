@@ -27,6 +27,7 @@ export async function POST(req: Request) {
       expectedChallenge: saved.challenge,
       expectedOrigin: origin,
       expectedRPID: rpID,
+      requireUserVerification: false,
       credential: {
         id: cred.credentialId,
         publicKey: isoBase64URL.toBuffer(cred.publicKey),
@@ -34,7 +35,10 @@ export async function POST(req: Request) {
         transports: (cred.transports?.split(',') as never) || undefined,
       },
     });
-    if (!verification.verified) return NextResponse.json({ error: 'Проверка не пройдена' }, { status: 400 });
+    if (!verification.verified) {
+      console.error('[passkey] login verify not verified', { rpID, origin });
+      return NextResponse.json({ error: 'Проверка не пройдена' }, { status: 400 });
+    }
 
     await db.update(authPasskeys).set({ counter: verification.authenticationInfo.newCounter, lastUsedAt: new Date() }).where(eq(authPasskeys.id, cred.id));
     await clearChallenge();
@@ -42,6 +46,7 @@ export async function POST(req: Request) {
     await recordLogin(saved.userId);
     return NextResponse.json({ ok: true });
   } catch (e) {
+    console.error('[passkey] login verify error', { rpID, origin, err: e instanceof Error ? e.message : e });
     return NextResponse.json({ error: e instanceof Error ? e.message : 'Ошибка проверки' }, { status: 400 });
   }
 }

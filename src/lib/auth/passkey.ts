@@ -2,11 +2,15 @@ import 'server-only';
 import { cookies, headers } from 'next/headers';
 import { isProduction } from '@/lib/env';
 
-/** Конфигурация Relying Party (RP) на основе входящего запроса. */
+/**
+ * Конфигурация Relying Party (RP). За прокси (Railway) реальный домен, который
+ * видел браузер, приходит в x-forwarded-host — он и определяет origin/rpID,
+ * иначе WebAuthn отклонит проверку из-за несовпадения origin.
+ */
 export async function getRpConfig(): Promise<{ rpID: string; rpName: string; origin: string }> {
   const h = await headers();
-  const host = h.get('host') || 'localhost:3000';
-  const proto = h.get('x-forwarded-proto') || (host.startsWith('localhost') ? 'http' : 'https');
+  const host = (h.get('x-forwarded-host') || h.get('host') || 'localhost:3000').split(',')[0].trim();
+  const proto = (h.get('x-forwarded-proto') || (host.startsWith('localhost') ? 'http' : 'https')).split(',')[0].trim();
   return { rpID: host.split(':')[0], rpName: 'Holdy', origin: `${proto}://${host}` };
 }
 

@@ -5,6 +5,7 @@ import { Stagger, Item, PageHeader } from '@/components/cabinet/ui';
 import { TiltCard } from '@/components/visual/TiltCard';
 import { Money } from '@/components/cabinet/Money';
 import { useLedger } from '@/lib/store/useLedger';
+import { ImportPanel } from '@/components/cabinet/ImportPanel';
 import { IconPlus, IconWallet } from '@/components/icons';
 
 /** Счета: список из леджера с реальными балансами. */
@@ -48,6 +49,15 @@ export default function AccountsPage() {
           ))}
         </Stagger>
       )}
+
+      {/* Импорт выписок — пополнение счёта из файла банка */}
+      <Item className="mt-8">
+        <div className="mb-1 border-t border-ink/8 pt-8">
+          <h2 className="font-display text-xl font-bold">Импорт выписок</h2>
+          <p className="mt-1 text-sm text-muted">Загрузите файл из банка — операции добавятся автоматически с категориями.</p>
+        </div>
+      </Item>
+      <Item><ImportPanel /></Item>
     </div>
   );
 }

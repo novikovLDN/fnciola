@@ -26,10 +26,10 @@ export default async function CabinetLayout({ children }: { children: React.Reac
   return (
     <LedgerProvider>
       <div className="relative flex min-h-screen" style={{ touchAction: 'pan-x pan-y' }}>
-      {/* Детализированный фон кабинета */}
-      <div aria-hidden className="pointer-events-none fixed inset-0 -z-10">
+      {/* Детализированный фон кабинета (тёплый светло-серый — панели на нём «парят») */}
+      <div aria-hidden className="pointer-events-none fixed inset-0 -z-10 bg-bg-2">
         <div
-          className="absolute inset-0 opacity-[0.04]"
+          className="absolute inset-0 opacity-[0.05]"
           style={{
             backgroundImage:
               'linear-gradient(rgb(17 17 19 / 0.5) 1px, transparent 1px), linear-gradient(90deg, rgb(17 17 19 / 0.5) 1px, transparent 1px)',

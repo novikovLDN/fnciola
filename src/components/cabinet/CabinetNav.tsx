@@ -7,11 +7,19 @@ import { Logo } from '@/components/Logo';
 import { LogoutButton } from '@/components/cabinet/LogoutButton';
 import { dict } from '@/i18n/ru';
 
-const NAV = [
+// Десктоп: полная навигация (импорт переехал в «Счета»).
+const SIDEBAR_NAV = [
   { href: '/app', label: dict.nav.dashboard, icon: DashIcon },
   { href: '/app/transactions', label: dict.nav.transactions, icon: ListIcon },
   { href: '/app/accounts', label: dict.nav.accounts, icon: CardIcon },
-  { href: '/app/import', label: dict.nav.import, icon: ImportIcon },
+  { href: '/app/projects', label: dict.nav.projects, icon: ChartIcon },
+  { href: '/app/settings', label: dict.nav.settings, icon: GearIcon },
+];
+
+// Мини-апп: операции — внутри дашборда, импорт — в «Счетах».
+const BOTTOM_NAV = [
+  { href: '/app', label: 'Главная', icon: DashIcon },
+  { href: '/app/accounts', label: dict.nav.accounts, icon: CardIcon },
   { href: '/app/projects', label: dict.nav.projects, icon: ChartIcon },
   { href: '/app/settings', label: dict.nav.settings, icon: GearIcon },
 ];
@@ -23,56 +31,59 @@ function active(pathname: string, href: string): boolean {
 export function CabinetSidebar() {
   const pathname = usePathname();
   return (
-    <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r border-ink/8 bg-bg-2/60 backdrop-blur-xl lg:flex">
-      <div className="flex h-16 items-center px-6">
-        <Link href="/app"><Logo /></Link>
-      </div>
-      <nav className="flex-1 space-y-1 p-3">
-        {NAV.map((item) => {
-          const isActive = active(pathname, item.href);
-          const Icon = item.icon;
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`relative flex items-center gap-3 rounded-2xl px-4 py-2.5 text-sm transition-colors ${
-                isActive ? 'text-ink' : 'text-muted hover:text-ink'
-              }`}
-              aria-current={isActive ? 'page' : undefined}
-            >
-              {isActive && (
-                <motion.span
-                  layoutId="nav-active"
-                  className="absolute inset-0 -z-10 rounded-2xl border border-violet/30 bg-violet/10"
-                  transition={{ type: 'spring', stiffness: 380, damping: 32 }}
-                />
-              )}
-              <Icon className={isActive ? 'text-violet' : ''} />
-              {item.label}
-            </Link>
-          );
-        })}
-      </nav>
-      <div className="p-3">
-        <LogoutButton className="btn btn-ghost w-full justify-start gap-3 px-4" label={dict.nav.logout} />
-      </div>
-    </aside>
+    <div className="hidden shrink-0 p-3 lg:block">
+      <aside className="sticky top-3 flex h-[calc(100vh-1.5rem)] w-60 flex-col overflow-hidden rounded-[1.75rem] border border-ink/8 bg-surface/80 backdrop-blur-xl shadow-[0_20px_60px_-28px_rgba(17,17,19,0.35),0_2px_8px_-4px_rgba(17,17,19,0.1)]">
+        <div className="flex h-16 items-center px-6">
+          <Link href="/app"><Logo /></Link>
+        </div>
+        <nav className="flex-1 space-y-1 p-3">
+          {SIDEBAR_NAV.map((item) => {
+            const isActive = active(pathname, item.href);
+            const Icon = item.icon;
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`relative flex items-center gap-3 rounded-2xl px-4 py-2.5 text-sm transition-colors ${
+                  isActive ? 'text-accent' : 'text-muted hover:text-ink'
+                }`}
+                aria-current={isActive ? 'page' : undefined}
+              >
+                {isActive && (
+                  <motion.span
+                    layoutId="nav-active"
+                    className="absolute inset-0 -z-10 rounded-2xl border border-accent/20 bg-accent/10"
+                    transition={{ type: 'spring', stiffness: 380, damping: 32 }}
+                  />
+                )}
+                <Icon className={isActive ? 'text-accent' : ''} />
+                {item.label}
+              </Link>
+            );
+          })}
+        </nav>
+        <div className="p-3">
+          <LogoutButton className="btn btn-ghost w-full justify-start gap-3 px-4" label={dict.nav.logout} />
+        </div>
+      </aside>
+    </div>
   );
 }
 
 export function CabinetBottomBar() {
   const pathname = usePathname();
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-ink/8 bg-bg-2/80 backdrop-blur-xl pb-[env(safe-area-inset-bottom)] lg:hidden">
-      <div className="grid grid-cols-6">
-        {NAV.map((item) => {
+    <div className="fixed inset-x-0 bottom-0 z-40 flex justify-center px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] lg:hidden">
+      {/* Плавающая скруглённая панель — «парит» над фоном (объём как в Telegram) */}
+      <nav className="grid w-full max-w-md grid-cols-4 rounded-[1.5rem] border border-ink/8 bg-surface/85 backdrop-blur-xl shadow-[0_18px_40px_-18px_rgba(17,17,19,0.35)]">
+        {BOTTOM_NAV.map((item) => {
           const isActive = active(pathname, item.href);
           const Icon = item.icon;
           return (
             <Link
               key={item.href}
               href={item.href}
-              className={`flex flex-col items-center gap-1 py-2.5 text-[9px] leading-tight ${isActive ? 'text-accent' : 'text-muted'}`}
+              className={`flex flex-col items-center gap-1 py-2.5 text-[10px] leading-tight transition-colors ${isActive ? 'text-accent' : 'text-muted'}`}
               aria-current={isActive ? 'page' : undefined}
             >
               <Icon />
@@ -80,8 +91,8 @@ export function CabinetBottomBar() {
             </Link>
           );
         })}
-      </div>
-    </nav>
+      </nav>
+    </div>
   );
 }
 

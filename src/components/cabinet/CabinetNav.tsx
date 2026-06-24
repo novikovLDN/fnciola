@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Logo } from '@/components/Logo';
+import { LogoutButton } from '@/components/cabinet/LogoutButton';
 import { dict } from '@/i18n/ru';
 
 const NAV = [
@@ -53,9 +54,7 @@ export function CabinetSidebar() {
         })}
       </nav>
       <div className="p-3">
-        <Link href="/" className="btn btn-ghost w-full justify-start gap-3 px-4">
-          <LogoutIcon /> {dict.nav.logout}
-        </Link>
+        <LogoutButton className="btn btn-ghost w-full justify-start gap-3 px-4" label={dict.nav.logout} />
       </div>
     </aside>
   );

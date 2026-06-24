@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useEffect, useMemo, useState, useCallback } from 'react';
+import { createContext, useContext, useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { add, sum, type Minor } from '@/lib/money';
 import { expandOccurrences, type EntryKind, type ExpenseGroup, type Recurrence } from '@/lib/metrics';
 
@@ -108,43 +108,60 @@ function uid(): string {
   return Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
 }
 
-function load(): LedgerState {
-  if (typeof window === 'undefined') return EMPTY;
-  try {
-    const raw = window.localStorage.getItem(KEY);
-    if (!raw) return EMPTY;
-    const parsed = JSON.parse(raw) as Partial<LedgerState>;
-    return {
-      accounts: parsed.accounts ?? [],
-      // Совместимость со старыми записями без recurrence.
-      txs: (parsed.txs ?? []).map((t) => ({ ...t, recurrence: t.recurrence ?? 'one_time' })),
-      projects: parsed.projects ?? [],
-      entries: parsed.entries ?? [],
-    };
-  } catch {
-    return EMPTY;
-  }
+function normalize(parsed: Partial<LedgerState> | null | undefined): LedgerState {
+  return {
+    accounts: parsed?.accounts ?? [],
+    // Совместимость со старыми записями без recurrence.
+    txs: (parsed?.txs ?? []).map((t) => ({ ...t, recurrence: t.recurrence ?? 'one_time' })),
+    projects: parsed?.projects ?? [],
+    entries: parsed?.entries ?? [],
+  };
 }
 
 export function LedgerProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<LedgerState>(EMPTY);
   const [hydrated, setHydrated] = useState(false);
+  const dirtyRef = useRef(false);
+  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Гидратация из localStorage только на клиенте (без mismatch).
+  // Загрузка данных пользователя с сервера (per-user, БД).
   useEffect(() => {
-    setState(load());
-    setHydrated(true);
+    let alive = true;
+    (async () => {
+      try {
+        const res = await fetch('/api/ledger', { cache: 'no-store' });
+        if (alive && res.ok) {
+          const json = await res.json();
+          setState(normalize(json.data));
+        }
+      } catch {
+        /* офлайн/ошибка сети — стартуем с пустого */
+      } finally {
+        if (alive) setHydrated(true);
+      }
+    })();
+    return () => { alive = false; };
   }, []);
 
-  // Персист.
+  // Сохранение на сервер (debounce), только после реальных изменений.
   useEffect(() => {
-    if (!hydrated) return;
-    try {
-      window.localStorage.setItem(KEY, JSON.stringify(state));
-    } catch {
-      /* квота/приватный режим — игнорируем */
-    }
+    if (!hydrated || !dirtyRef.current) return;
+    if (saveTimer.current) clearTimeout(saveTimer.current);
+    saveTimer.current = setTimeout(() => {
+      fetch('/api/ledger', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(state),
+      }).catch(() => {});
+    }, 600);
+    return () => { if (saveTimer.current) clearTimeout(saveTimer.current); };
   }, [state, hydrated]);
+
+  // Помечаем «грязным» при любом изменении состояния после гидратации.
+  const mutate = useCallback((updater: (prev: LedgerState) => LedgerState) => {
+    dirtyRef.current = true;
+    setState(updater);
+  }, []);
 
   const ensureAccount = useCallback((s: LedgerState): { s: LedgerState; id: string } => {
     if (s.accounts.length > 0) return { s, id: s.accounts[0].id };
@@ -153,7 +170,7 @@ export function LedgerProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const addTx = useCallback<LedgerContextValue['addTx']>((input) => {
-    setState((prev) => {
+    mutate((prev) => {
       const { s, id } = ensureAccount(prev);
       const tx: Tx = {
         ...input,
@@ -166,25 +183,25 @@ export function LedgerProvider({ children }: { children: React.ReactNode }) {
   }, [ensureAccount]);
 
   const deleteTx = useCallback<LedgerContextValue['deleteTx']>((id) => {
-    setState((prev) => ({ ...prev, txs: prev.txs.filter((t) => t.id !== id) }));
+    mutate((prev) => ({ ...prev, txs: prev.txs.filter((t) => t.id !== id) }));
   }, []);
 
   const addAccount = useCallback<LedgerContextValue['addAccount']>((name, currency = DEFAULT_CURRENCY) => {
     const acc: Account = { id: uid(), name, currency, createdAt: Date.now() };
-    setState((prev) => ({ ...prev, accounts: [...prev.accounts, acc] }));
+    mutate((prev) => ({ ...prev, accounts: [...prev.accounts, acc] }));
     return acc;
   }, []);
 
-  const reset = useCallback(() => setState(EMPTY), []);
+  const reset = useCallback(() => mutate(() => EMPTY), []);
 
   const addProject = useCallback<LedgerContextValue['addProject']>((name, currency = DEFAULT_CURRENCY) => {
     const p: Project = { id: uid(), name, currency, cashBalance: 0, createdAt: Date.now() };
-    setState((prev) => ({ ...prev, projects: [...prev.projects, p] }));
+    mutate((prev) => ({ ...prev, projects: [...prev.projects, p] }));
     return p;
   }, []);
 
   const deleteProject = useCallback<LedgerContextValue['deleteProject']>((id) => {
-    setState((prev) => ({
+    mutate((prev) => ({
       ...prev,
       projects: prev.projects.filter((p) => p.id !== id),
       entries: prev.entries.filter((e) => e.projectId !== id),
@@ -192,16 +209,16 @@ export function LedgerProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const setProjectCash = useCallback<LedgerContextValue['setProjectCash']>((id, cashBalance) => {
-    setState((prev) => ({ ...prev, projects: prev.projects.map((p) => (p.id === id ? { ...p, cashBalance } : p)) }));
+    mutate((prev) => ({ ...prev, projects: prev.projects.map((p) => (p.id === id ? { ...p, cashBalance } : p)) }));
   }, []);
 
   const addEntry = useCallback<LedgerContextValue['addEntry']>((input) => {
     const e: ProjectEntryRow = { ...input, id: uid(), createdAt: Date.now() };
-    setState((prev) => ({ ...prev, entries: [...prev.entries, e] }));
+    mutate((prev) => ({ ...prev, entries: [...prev.entries, e] }));
   }, []);
 
   const deleteEntry = useCallback<LedgerContextValue['deleteEntry']>((id) => {
-    setState((prev) => ({ ...prev, entries: prev.entries.filter((e) => e.id !== id) }));
+    mutate((prev) => ({ ...prev, entries: prev.entries.filter((e) => e.id !== id) }));
   }, []);
 
   const seedSample = useCallback(() => {
@@ -219,7 +236,7 @@ export function LedgerProvider({ children }: { children: React.ReactNode }) {
       { id: uid(), accountId: acc.id, direction: 'expense', amountMinor: 250000, categoryKey: 'transport', occurredAt: d(3), recurrence: 'one_time', note: 'Такси', createdAt: Date.now() },
       { id: uid(), accountId: acc.id, direction: 'income', amountMinor: 3500000, categoryKey: 'freelance', occurredAt: d(1), recurrence: 'one_time', note: 'Подработка', createdAt: Date.now() },
     ];
-    setState((prev) => ({ ...prev, accounts: [acc], txs }));
+    mutate((prev) => ({ ...prev, accounts: [acc], txs }));
   }, []);
 
   const value = useMemo<LedgerContextValue>(() => {

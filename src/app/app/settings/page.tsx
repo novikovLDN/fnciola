@@ -1,17 +1,26 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Item, PageHeader } from '@/components/cabinet/ui';
 import { Select } from '@/components/ui/Select';
 import { SUPPORTED_CURRENCY_CODES, getCurrency } from '@/lib/currencies';
 import { PLANS, pricePerMonthMinor, CURRENCY_PLANS } from '@/config/plans';
 import { formatMoney } from '@/lib/money';
 import { NotificationsCard } from './NotificationsCard';
+import { LogoutButton } from '@/components/cabinet/LogoutButton';
 import { IconKey } from '@/components/icons';
 
 /** Настройки (§15.2): профиль, валюта, passkeys, пароль, уведомления, подписка. */
 export default function SettingsPage() {
   const [currency, setCurrency] = useState('RUB');
+  const [email, setEmail] = useState('');
+
+  useEffect(() => {
+    fetch('/api/auth/me').then((r) => r.json()).then((j) => {
+      if (j.user?.email) setEmail(j.user.email);
+      if (j.user?.displayCurrency) setCurrency(j.user.displayCurrency);
+    }).catch(() => {});
+  }, []);
   const currencyOptions = SUPPORTED_CURRENCY_CODES.map((code) => {
     const c = getCurrency(code);
     return { value: code, label: `${c.code} — ${c.name}`, hint: c.symbol };
@@ -26,7 +35,7 @@ export default function SettingsPage() {
           <h2 className="font-display text-lg font-semibold">Профиль</h2>
           <label className="block max-w-sm">
             <span className="text-sm text-muted">Email</span>
-            <input className="mt-1.5 w-full rounded-2xl border border-ink/10 bg-bg-2 px-4 py-2.5 text-sm outline-none" defaultValue="user@example.com" readOnly />
+            <input className="mt-1.5 w-full rounded-2xl border border-ink/10 bg-bg-2 px-4 py-2.5 text-sm outline-none" value={email || '—'} readOnly />
           </label>
           <div className="block max-w-sm">
             <span className="text-sm text-muted">Валюта отображения</span>
@@ -75,6 +84,10 @@ export default function SettingsPage() {
             Оплата через Platecha. Автопродление, отмена в любой момент — доступ до конца оплаченного периода (§12).
           </p>
         </section>
+      </Item>
+
+      <Item>
+        <LogoutButton className="btn btn-secondary w-full" />
       </Item>
     </div>
   );

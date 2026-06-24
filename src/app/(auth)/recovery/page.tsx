@@ -2,46 +2,86 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { checkPasswordStrength } from '@/lib/password';
 import { Field } from '@/components/auth/Field';
 
 type Step = 'email' | 'code' | 'password';
 
-/** Восстановление пароля (§11.3): email → OTP-код → новый пароль. */
+/** Восстановление пароля: email → OTP-код → новый пароль (обновляется в БД). */
 export default function RecoveryPage() {
+  const router = useRouter();
   const [step, setStep] = useState<Step>('email');
   const [email, setEmail] = useState('');
   const [code, setCode] = useState('');
   const [pwd, setPwd] = useState('');
+  const [error, setError] = useState('');
+  const [info, setInfo] = useState('');
+  const [loading, setLoading] = useState(false);
   const strength = checkPasswordStrength(pwd);
+
+  async function post(url: string, body: object) {
+    const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    const json = await res.json().catch(() => ({}));
+    return { ok: res.ok, json } as { ok: boolean; json: { error?: string; devCode?: string } };
+  }
+
+  async function next(e: React.FormEvent) {
+    e.preventDefault();
+    setError('');
+    setInfo('');
+    setLoading(true);
+    try {
+      if (step === 'email') {
+        if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return setError('Введите корректный email');
+        const { ok, json } = await post('/api/auth/recovery/start', { email });
+        if (!ok) return setError(json.error || 'Не удалось отправить код');
+        if (json.devCode) setInfo(`Тестовый код: ${json.devCode}`);
+        setStep('code');
+      } else if (step === 'code') {
+        if (!/^\d{6}$/.test(code)) return setError('Код состоит из 6 цифр');
+        const { ok, json } = await post('/api/auth/recovery/verify', { email, code });
+        if (!ok) return setError(json.error || 'Неверный код');
+        setStep('password');
+      } else {
+        if (!strength.valid) return setError('Пароль слишком короткий (минимум 8 символов)');
+        const { ok, json } = await post('/api/auth/recovery/set-password', { email, code, password: pwd });
+        if (!ok) return setError(json.error || 'Не удалось обновить пароль');
+        router.push('/app');
+        router.refresh();
+      }
+    } catch {
+      setError('Ошибка сети. Попробуйте ещё раз.');
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
     <div className="card ring-gradient">
       <h1 className="font-display text-2xl font-bold">Восстановление</h1>
-      <p className="mt-1 text-sm text-muted">Сбросьте пароль по коду из письма</p>
+      <p className="mt-1 text-sm text-muted">
+        {step === 'email' ? 'Сбросьте пароль по коду из письма' : step === 'code' ? `Код отправлен на ${email}` : 'Придумайте новый пароль'}
+      </p>
 
-      {step === 'email' && (
-        <form onSubmit={(e) => { e.preventDefault(); setStep('code'); }} className="mt-6 space-y-4">
-          <Field label="Email" type="email" value={email} onChange={setEmail} placeholder="you@example.com" />
-          <button className="btn btn-primary w-full">Отправить код</button>
-        </form>
-      )}
-      {step === 'code' && (
-        <form onSubmit={(e) => { e.preventDefault(); setStep('password'); }} className="mt-6 space-y-4">
-          <Field label="Код из письма" inputMode="numeric" value={code} onChange={setCode} placeholder="000000" />
-          <button className="btn btn-primary w-full">Подтвердить</button>
-        </form>
-      )}
-      {step === 'password' && (
-        <form onSubmit={(e) => { e.preventDefault(); alert('Демо: пароль обновлён.'); }} className="mt-6 space-y-4">
-          <Field label="Новый пароль" type="password" value={pwd} onChange={setPwd} />
-          {pwd && <p className="text-xs text-muted">Надёжность: {strength.label}</p>}
-          <button className="btn btn-primary w-full" disabled={!strength.valid}>Сохранить пароль</button>
-        </form>
-      )}
+      <form onSubmit={next} className="mt-6 space-y-4">
+        {step === 'email' && <Field label="Email" type="email" value={email} onChange={setEmail} placeholder="you@example.com" autoComplete="email" />}
+        {step === 'code' && <Field label="Код из письма" inputMode="numeric" value={code} onChange={(v) => setCode(v.replace(/\D/g, '').slice(0, 6))} placeholder="000000" />}
+        {step === 'password' && (
+          <>
+            <Field label="Новый пароль" type="password" value={pwd} onChange={setPwd} autoComplete="new-password" />
+            {pwd && <p className="text-xs text-muted">Надёжность: {strength.label}</p>}
+          </>
+        )}
+        {info && <p className="text-sm text-accent" role="status">{info}</p>}
+        {error && <p className="text-sm text-negative" role="alert">{error}</p>}
+        <button className="btn btn-primary w-full" disabled={loading}>
+          {loading ? 'Подождите…' : step === 'email' ? 'Отправить код' : step === 'code' ? 'Подтвердить' : 'Сохранить пароль'}
+        </button>
+      </form>
 
       <p className="mt-6 text-center text-sm text-muted">
-        Вспомнили? <Link href="/login" className="font-medium text-cyan hover:underline">Войти</Link>
+        Вспомнили? <Link href="/login" className="font-medium text-accent hover:underline">Войти</Link>
       </p>
     </div>
   );

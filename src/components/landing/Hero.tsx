@@ -57,7 +57,7 @@ export function Hero() {
             transition={{ duration: 0.8, ease, delay: 0.25 }}
           >
             <Link href="/register" className="btn btn-primary px-7 py-3 text-base">Начать бесплатно</Link>
-            <Link href="/app" className="btn btn-secondary px-7 py-3 text-base">Смотреть демо</Link>
+            <Link href="/login" className="btn btn-secondary px-7 py-3 text-base">Войти</Link>
           </motion.div>
 
           <motion.div

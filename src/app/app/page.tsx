@@ -13,7 +13,7 @@ type Tab = 'home' | 'ops' | 'stats';
 
 /** Дашборд — простой режим: три вкладки, крупное добавление операций. */
 export default function DashboardPage() {
-  const { hydrated, balance, totalIncome, totalExpense, txs, currency, seedSample } = useLedger();
+  const { hydrated, balance, totalIncome, totalExpense, txs, currency } = useLedger();
   const [tab, setTab] = useState<Tab>('home');
 
   const tabs: { id: Tab; label: string; icon: typeof IconHome }[] = [
@@ -67,7 +67,7 @@ export default function DashboardPage() {
                 <OpsList limit={4} showDelete={false} />
               </div>
             ) : (
-              <EmptyState onSeed={seedSample} />
+              <EmptyState />
             )}
           </div>
         )}
@@ -84,13 +84,12 @@ export default function DashboardPage() {
   );
 }
 
-function EmptyState({ onSeed }: { onSeed: () => void }) {
+function EmptyState() {
   return (
     <div className="card flex flex-col items-center gap-3 py-10 text-center">
       <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-grad-brand text-white"><IconSpark size={26} /></span>
       <h3 className="font-display text-lg font-bold">Начните вести учёт</h3>
       <p className="max-w-xs text-sm text-muted">Добавьте первый доход или расход выше — баланс, графики и аналитика посчитаются автоматически.</p>
-      <button onClick={onSeed} className="btn btn-secondary mt-1">Заполнить примером</button>
     </div>
   );
 }

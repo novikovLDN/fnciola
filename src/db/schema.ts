@@ -206,6 +206,26 @@ export const projectEntries = pgTable('project_entries', {
   projectIdx: index('project_entries_project_idx').on(t.projectId),
 }));
 
+// --- sessions (вход по cookie) ---------------------------------------------
+
+export const sessions = pgTable('sessions', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  tokenHash: text('token_hash').notNull().unique(),
+  expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+}, (t) => ({
+  userIdx: index('sessions_user_idx').on(t.userId),
+}));
+
+// --- user_ledger (все данные пользователя, JSON-снимок) --------------------
+
+export const userLedger = pgTable('user_ledger', {
+  userId: uuid('user_id').primaryKey().references(() => users.id, { onDelete: 'cascade' }),
+  data: jsonb('data').notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
 // --- push_subscriptions ----------------------------------------------------
 
 export const pushSubscriptions = pgTable('push_subscriptions', {

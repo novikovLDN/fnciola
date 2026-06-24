@@ -1,6 +1,10 @@
 import type { Viewport } from 'next';
+import { redirect } from 'next/navigation';
 import { CabinetSidebar, CabinetBottomBar } from '@/components/cabinet/CabinetNav';
 import { LedgerProvider } from '@/lib/store/useLedger';
+import { getCurrentUser } from '@/lib/auth/session';
+
+export const dynamic = 'force-dynamic';
 
 // В мини-приложении запрещаем масштабирование жестами (мешает работе).
 // Лендинг остаётся масштабируемым (доступность) — это переопределение только для /app.
@@ -14,7 +18,11 @@ export const viewport: Viewport = {
 };
 
 /** Каркас кабинета: стеклянная боковая навигация + светлый детализированный фон. */
-export default function CabinetLayout({ children }: { children: React.ReactNode }) {
+export default async function CabinetLayout({ children }: { children: React.ReactNode }) {
+  // Доступ только для авторизованных — иначе на вход.
+  const user = await getCurrentUser();
+  if (!user) redirect('/login');
+
   return (
     <LedgerProvider>
       <div className="relative flex min-h-screen" style={{ touchAction: 'pan-x pan-y' }}>

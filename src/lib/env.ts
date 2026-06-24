@@ -173,6 +173,20 @@ export const fxEnv = lazy('fx', () =>
     }),
 );
 
+// --- Email через Resend (OTP-коды) -----------------------------------------
+
+export const resendEnv = lazy('resend', () =>
+  z
+    .object({
+      RESEND_API_KEY: z.string().min(1),
+      EMAIL_FROM: z.string().min(1).default('Holdy <onboarding@resend.dev>'),
+    })
+    .parse({
+      RESEND_API_KEY: process.env.RESEND_API_KEY,
+      EMAIL_FROM: process.env.EMAIL_FROM,
+    }),
+);
+
 // --- Платежи (Platecha) -----------------------------------------------------
 
 export const paymentsEnv = lazy('payments', () =>

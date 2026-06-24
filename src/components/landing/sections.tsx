@@ -234,7 +234,7 @@ export function CtaBand() {
           <p className="mx-auto mt-4 max-w-md text-muted">Регистрация за минуту. Без карты. Весь функционал на старте бесплатный.</p>
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <Link href="/register" className="btn btn-primary px-8 py-3 text-base">Создать аккаунт →</Link>
-            <Link href="/app" className="btn btn-glass px-8 py-3 text-base">Открыть демо</Link>
+            <Link href="/login" className="btn btn-glass px-8 py-3 text-base">Войти</Link>
           </div>
         </div>
       </Reveal>
@@ -259,7 +259,7 @@ export function Footer() {
             <span className="label mb-1">Продукт</span>
             <a href="#features" className="text-muted hover:text-ink">Возможности</a>
             <a href="#pricing" className="text-muted hover:text-ink">Тарифы</a>
-            <Link href="/app" className="text-muted hover:text-ink">Демо</Link>
+            <Link href="/login" className="text-muted hover:text-ink">Войти</Link>
           </div>
           <div className="flex flex-col gap-2">
             <span className="label mb-1">Аккаунт</span>

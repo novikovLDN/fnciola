@@ -1,11 +1,9 @@
 /**
  * Клиент БД (Drizzle + postgres.js) с единым общим пулом (Аддендум №1, §2).
  *
- *  - Один общий пул на инстанс (не открывать пул на каждый запрос).
- *  - Лимит коннектов через DB_POOL_MAX (дефолт 10), чтобы не упереться в лимит
- *    Postgres при масштабировании реплик.
- *  - SSL не навязываем для internal-подключения по приватной сети Railway;
- *    параметры берём из самого DATABASE_URL.
+ *  - Один общий пул на инстанс (ленивая инициализация — не на этапе сборки).
+ *  - Лимит коннектов через DB_POOL_MAX (дефолт 10).
+ *  - SSL определяется строкой подключения (internal — без TLS).
  */
 
 import { drizzle } from 'drizzle-orm/postgres-js';
@@ -13,33 +11,46 @@ import postgres from 'postgres';
 import { dbEnv } from '../lib/env';
 import * as schema from './schema';
 
-// Глобальный кеш для dev/HMR — чтобы не плодить пулы при горячей перезагрузке.
-const globalForDb = globalThis as unknown as {
-  __holdyPg?: ReturnType<typeof postgres>;
-};
+type Sql = ReturnType<typeof postgres>;
+type Db = ReturnType<typeof drizzle<typeof schema>>;
 
-function createPool() {
+const globalForDb = globalThis as unknown as { __holdyPg?: Sql; __holdyDb?: Db };
+
+function createPool(): Sql {
   const { DATABASE_URL, DB_POOL_MAX } = dbEnv();
   return postgres(DATABASE_URL, {
     max: DB_POOL_MAX,
     idle_timeout: 20,
     max_lifetime: 60 * 30,
-    // SSL определяется строкой подключения (internal — без TLS, public — с TLS).
   });
 }
 
-export const sql = globalForDb.__holdyPg ?? createPool();
-if (process.env.NODE_ENV !== 'production') {
-  globalForDb.__holdyPg = sql;
+/** Ленивая инициализация пула и drizzle — только при первом обращении (рантайм). */
+function getSql(): Sql {
+  if (!globalForDb.__holdyPg) globalForDb.__holdyPg = createPool();
+  return globalForDb.__holdyPg;
 }
 
-export const db = drizzle(sql, { schema });
+function getDb(): Db {
+  if (!globalForDb.__holdyDb) globalForDb.__holdyDb = drizzle(getSql(), { schema });
+  return globalForDb.__holdyDb;
+}
 
-export type Database = typeof db;
+// Прокси: `import { db }` работает как обычно, но пул создаётся лениво.
+export const db = new Proxy({} as Db, {
+  get(_target, prop) {
+    const real = getDb() as unknown as Record<string | symbol, unknown>;
+    const value = real[prop];
+    return typeof value === 'function' ? (value as (...a: unknown[]) => unknown).bind(real) : value;
+  },
+});
+
+export type Database = Db;
 
 /** Лёгкий ping БД для healthcheck (Аддендум №1, §6). */
 export async function pingDatabase(): Promise<boolean> {
   try {
+    const sql = getSql();
     await sql`select 1`;
     return true;
   } catch {

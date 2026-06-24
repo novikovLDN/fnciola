@@ -8,6 +8,13 @@
       "when": 1782237057160,
       "tag": "0000_supreme_nova",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1782317119050,
+      "tag": "0001_peaceful_wolfpack",
+      "breakpoints": true
     }
   ]
 }

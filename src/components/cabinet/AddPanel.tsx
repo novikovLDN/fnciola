@@ -4,9 +4,20 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLedger, type Direction } from '@/lib/store/useLedger';
 import { parseMajorToMinor, formatMoney, groupAmountInput } from '@/lib/money';
+import type { Recurrence } from '@/lib/metrics';
 import { categoriesFor, getCategory } from '@/config/categories';
 import { IconPlus, IconArrowDown, IconArrowUp } from '@/components/icons';
 import { DatePicker } from '@/components/ui/DatePicker';
+import { Select } from '@/components/ui/Select';
+
+export const RECURRENCE_OPTIONS: { value: Recurrence; label: string }[] = [
+  { value: 'one_time', label: 'Разово' },
+  { value: 'daily', label: 'Ежедневно' },
+  { value: 'weekly', label: 'Еженедельно' },
+  { value: 'monthly', label: 'Ежемесячно' },
+  { value: 'quarterly', label: 'Ежеквартально' },
+  { value: 'yearly', label: 'Ежегодно' },
+];
 
 /**
  * Крупная панель быстрого добавления операции (простой режим):
@@ -20,6 +31,7 @@ export function AddPanel({ onAdded }: { onAdded?: () => void }) {
   const cats = categoriesFor(direction);
   const [catKey, setCatKey] = useState(cats[0]?.key ?? 'other');
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
+  const [recurrence, setRecurrence] = useState<Recurrence>('one_time');
   const [note, setNote] = useState('');
   const [flash, setFlash] = useState(false);
 
@@ -39,7 +51,7 @@ export function AddPanel({ onAdded }: { onAdded?: () => void }) {
 
   function submit() {
     if (!valid) return;
-    addTx({ accountId: '', direction, amountMinor, categoryKey: catKey, occurredAt: date, note: note.trim() || undefined });
+    addTx({ accountId: '', direction, amountMinor, categoryKey: catKey, occurredAt: date, recurrence, note: note.trim() || undefined });
     setRaw('');
     setNote('');
     setFlash(true);
@@ -116,11 +128,26 @@ export function AddPanel({ onAdded }: { onAdded?: () => void }) {
         })}
       </div>
 
-      {/* Дата + заметка */}
+      {/* Дата + регулярность */}
       <div className="mt-5 grid gap-2 sm:grid-cols-2">
-        <DatePicker value={date} onChange={setDate} ariaLabel="Дата операции" />
-        <input value={note} onChange={(e) => setNote(e.target.value)} placeholder="Заметка (необязательно)" aria-label="Заметка" className="rounded-2xl border border-ink/10 bg-bg-2 px-4 py-2.5 text-sm outline-none placeholder:text-muted" />
+        <div>
+          <span className="mb-1 block text-xs text-muted">Дата{recurrence !== 'one_time' ? ' начала' : ''}</span>
+          <DatePicker value={date} onChange={setDate} ariaLabel="Дата операции" />
+        </div>
+        <div>
+          <span className="mb-1 block text-xs text-muted">Регулярность</span>
+          <Select value={recurrence} onChange={(v) => setRecurrence(v as Recurrence)} options={RECURRENCE_OPTIONS} ariaLabel="Регулярность платежа" />
+        </div>
       </div>
+
+      {/* Заметка */}
+      <input value={note} onChange={(e) => setNote(e.target.value)} placeholder="Заметка (необязательно)" aria-label="Заметка" className="mt-2 w-full rounded-2xl border border-ink/10 bg-bg-2 px-4 py-2.5 text-sm outline-none placeholder:text-muted" />
+
+      {recurrence !== 'one_time' && (
+        <p className="mt-2 text-center text-xs text-muted">
+          Повторяется {RECURRENCE_OPTIONS.find((r) => r.value === recurrence)?.label.toLowerCase()} с даты начала — учитывается в балансе и аналитике.
+        </p>
+      )}
 
       <button
         onClick={submit}

@@ -6,10 +6,12 @@ import { getCategory } from '@/config/categories';
 import { Money } from '@/components/cabinet/Money';
 import { IconTrash } from '@/components/icons';
 
-/** Список операций из леджера с удалением. */
+const RECUR_SHORT: Record<string, string> = { daily: 'ежедн.', weekly: 'еженед.', monthly: 'ежемес.', quarterly: 'ежекварт.', yearly: 'ежегодно' };
+
+/** Список операций из леджера (с развёрнутыми регулярными платежами). Удаление — по правилу. */
 export function OpsList({ limit, showDelete = true }: { limit?: number; showDelete?: boolean }) {
-  const { txs, deleteTx, currency } = useLedger();
-  const items = [...txs].sort((a, b) => (a.occurredAt < b.occurredAt ? 1 : a.occurredAt > b.occurredAt ? -1 : b.createdAt - a.createdAt));
+  const { materialized, deleteTx, currency } = useLedger();
+  const items = [...materialized].sort((a, b) => (a.occurredAt < b.occurredAt ? 1 : a.occurredAt > b.occurredAt ? -1 : 0));
   const shown = limit ? items.slice(0, limit) : items;
 
   if (shown.length === 0) {
@@ -22,6 +24,7 @@ export function OpsList({ limit, showDelete = true }: { limit?: number; showDele
         {shown.map((t) => {
           const cat = getCategory(t.categoryKey);
           const Icon = cat.icon;
+          const isRecurring = t.recurrence !== 'one_time';
           return (
             <motion.li
               key={t.id}
@@ -37,14 +40,26 @@ export function OpsList({ limit, showDelete = true }: { limit?: number; showDele
                   <Icon width={18} height={18} />
                 </span>
                 <div className="min-w-0">
-                  <div className="truncate font-medium">{t.note || cat.label}</div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="truncate font-medium">{t.note || cat.label}</span>
+                    {isRecurring && (
+                      <span className="inline-flex shrink-0 items-center gap-0.5 rounded-full bg-accent/10 px-1.5 py-0.5 text-[10px] font-medium text-accent" title="Регулярный платёж">
+                        ↻ {RECUR_SHORT[t.recurrence]}
+                      </span>
+                    )}
+                  </div>
                   <div className="text-xs text-muted">{cat.label} · {t.occurredAt}</div>
                 </div>
               </div>
               <div className="flex shrink-0 items-center gap-2">
                 <Money amount={t.direction === 'income' ? t.amountMinor : -t.amountMinor} currency={currency} colorize showSign />
                 {showDelete && (
-                  <button onClick={() => deleteTx(t.id)} aria-label="Удалить операцию" className="rounded-full p-1.5 text-muted transition-colors hover:bg-negative/10 hover:text-negative">
+                  <button
+                    onClick={() => deleteTx(t.ruleId)}
+                    aria-label={isRecurring ? 'Удалить регулярный платёж' : 'Удалить операцию'}
+                    title={isRecurring ? 'Удалит все повторы этого платежа' : 'Удалить'}
+                    className="rounded-full p-1.5 text-muted transition-colors hover:bg-negative/10 hover:text-negative"
+                  >
                     <IconTrash size={16} />
                   </button>
                 )}

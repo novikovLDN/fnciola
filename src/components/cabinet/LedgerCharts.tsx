@@ -30,7 +30,7 @@ function bucketKey(dateStr: string, seg: Segment): string {
 
 /** Аналитика из реального леджера: динамика по сегментам + структура расходов. */
 export function LedgerCharts() {
-  const { txs, currency } = useLedger();
+  const { materialized: txs, currency } = useLedger();
   const [seg, setSeg] = useState<Segment>('month');
 
   // Сегментная динамика (сохраняем порядок появления; для weekday — фикс. порядок)

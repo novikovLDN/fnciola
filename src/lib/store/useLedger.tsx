@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useMemo, useState, useCallback } from 'react';
 import { add, sum, type Minor } from '@/lib/money';
-import type { EntryKind, ExpenseGroup, Recurrence } from '@/lib/metrics';
+import { expandOccurrences, type EntryKind, type ExpenseGroup, type Recurrence } from '@/lib/metrics';
 
 /**
  * Демо-леджер: реальное локальное состояние (localStorage), стартует ПУСТЫМ.
@@ -25,9 +25,24 @@ export interface Tx {
   direction: Direction;
   amountMinor: Minor; // всегда положительное; знак задаётся direction
   categoryKey: string;
-  occurredAt: string; // YYYY-MM-DD
+  occurredAt: string; // YYYY-MM-DD — дата (или дата начала для регулярных)
+  recurrence: Recurrence; // 'one_time' по умолчанию
+  endDate?: string | null; // опциональное окончание регулярного платежа
   note?: string;
   createdAt: number;
+}
+
+/** Развёрнутая операция (одно срабатывание правила) — для баланса/списков. */
+export interface MaterializedTx {
+  id: string; // синтетический: ruleId#date
+  ruleId: string;
+  accountId: string;
+  direction: Direction;
+  amountMinor: Minor;
+  categoryKey: string;
+  occurredAt: string;
+  note?: string;
+  recurrence: Recurrence;
 }
 
 export interface Project {
@@ -77,6 +92,7 @@ interface LedgerContextValue extends LedgerState {
   deleteEntry: (id: string) => void;
   entriesOf: (projectId: string) => ProjectEntryRow[];
   // селекторы
+  materialized: MaterializedTx[]; // развёрнутые операции до сегодня
   balance: Minor;
   totalIncome: Minor;
   totalExpense: Minor;
@@ -100,7 +116,8 @@ function load(): LedgerState {
     const parsed = JSON.parse(raw) as Partial<LedgerState>;
     return {
       accounts: parsed.accounts ?? [],
-      txs: parsed.txs ?? [],
+      // Совместимость со старыми записями без recurrence.
+      txs: (parsed.txs ?? []).map((t) => ({ ...t, recurrence: t.recurrence ?? 'one_time' })),
       projects: parsed.projects ?? [],
       entries: parsed.entries ?? [],
     };
@@ -196,25 +213,40 @@ export function LedgerProvider({ children }: { children: React.ReactNode }) {
       return x.toISOString().slice(0, 10);
     };
     const txs: Tx[] = [
-      { id: uid(), accountId: acc.id, direction: 'income', amountMinor: 12500000, categoryKey: 'salary', occurredAt: d(8), note: 'Зарплата', createdAt: Date.now() },
-      { id: uid(), accountId: acc.id, direction: 'expense', amountMinor: 385000, categoryKey: 'groceries', occurredAt: d(6), note: 'Продукты', createdAt: Date.now() },
-      { id: uid(), accountId: acc.id, direction: 'expense', amountMinor: 150000, categoryKey: 'cafe', occurredAt: d(4), note: 'Кофейня', createdAt: Date.now() },
-      { id: uid(), accountId: acc.id, direction: 'expense', amountMinor: 250000, categoryKey: 'transport', occurredAt: d(3), note: 'Такси', createdAt: Date.now() },
-      { id: uid(), accountId: acc.id, direction: 'income', amountMinor: 3500000, categoryKey: 'freelance', occurredAt: d(1), note: 'Подработка', createdAt: Date.now() },
+      { id: uid(), accountId: acc.id, direction: 'income', amountMinor: 12500000, categoryKey: 'salary', occurredAt: d(8), recurrence: 'monthly', note: 'Зарплата', createdAt: Date.now() },
+      { id: uid(), accountId: acc.id, direction: 'expense', amountMinor: 385000, categoryKey: 'groceries', occurredAt: d(6), recurrence: 'one_time', note: 'Продукты', createdAt: Date.now() },
+      { id: uid(), accountId: acc.id, direction: 'expense', amountMinor: 150000, categoryKey: 'cafe', occurredAt: d(4), recurrence: 'one_time', note: 'Кофейня', createdAt: Date.now() },
+      { id: uid(), accountId: acc.id, direction: 'expense', amountMinor: 250000, categoryKey: 'transport', occurredAt: d(3), recurrence: 'one_time', note: 'Такси', createdAt: Date.now() },
+      { id: uid(), accountId: acc.id, direction: 'income', amountMinor: 3500000, categoryKey: 'freelance', occurredAt: d(1), recurrence: 'one_time', note: 'Подработка', createdAt: Date.now() },
     ];
     setState((prev) => ({ ...prev, accounts: [acc], txs }));
   }, []);
 
   const value = useMemo<LedgerContextValue>(() => {
-    const incomes = state.txs.filter((t) => t.direction === 'income').map((t) => t.amountMinor);
-    const expenses = state.txs.filter((t) => t.direction === 'expense').map((t) => t.amountMinor);
-    const totalIncome = sum(incomes);
-    const totalExpense = sum(expenses);
+    // Разворачиваем регулярные операции в отдельные срабатывания до сегодня.
+    const today = new Date().toISOString().slice(0, 10);
+    const materialized: MaterializedTx[] = [];
+    for (const t of state.txs) {
+      if (t.recurrence === 'one_time') {
+        materialized.push({ id: `${t.id}#${t.occurredAt}`, ruleId: t.id, accountId: t.accountId, direction: t.direction, amountMinor: t.amountMinor, categoryKey: t.categoryKey, occurredAt: t.occurredAt, note: t.note, recurrence: t.recurrence });
+        continue;
+      }
+      const dates = expandOccurrences(
+        { kind: 'income', amount: t.amountMinor, recurrence: t.recurrence, startDate: t.occurredAt, endDate: t.endDate ?? null },
+        { from: t.occurredAt, to: today },
+      );
+      for (const date of dates) {
+        materialized.push({ id: `${t.id}#${date}`, ruleId: t.id, accountId: t.accountId, direction: t.direction, amountMinor: t.amountMinor, categoryKey: t.categoryKey, occurredAt: date, note: t.note, recurrence: t.recurrence });
+      }
+    }
+
+    const totalIncome = sum(materialized.filter((t) => t.direction === 'income').map((t) => t.amountMinor));
+    const totalExpense = sum(materialized.filter((t) => t.direction === 'expense').map((t) => t.amountMinor));
     const balance = totalIncome - totalExpense;
 
     const accountBalance = (accountId: string): Minor => {
       let b = 0;
-      for (const t of state.txs) {
+      for (const t of materialized) {
         if (t.accountId !== accountId) continue;
         b = add(b, t.direction === 'income' ? t.amountMinor : -t.amountMinor);
       }
@@ -238,6 +270,7 @@ export function LedgerProvider({ children }: { children: React.ReactNode }) {
       addEntry,
       deleteEntry,
       entriesOf,
+      materialized,
       balance,
       totalIncome,
       totalExpense,

@@ -6,23 +6,10 @@
  */
 
 import { createHash } from 'node:crypto';
-import type { Minor } from '../money';
+import { normalizeDescription, type DedupKeyInput } from './dedup-key';
 
-export interface DedupInput {
-  accountId: string;
-  occurredAt: string; // YYYY-MM-DD
-  amountOriginal: Minor; // минорные единицы, со знаком направления
-  currency: string;
-  normalizedDescription: string;
-}
-
-/** Нормализация описания: схлопывание пробелов, нижний регистр, trim. */
-export function normalizeDescription(raw: string): string {
-  return (raw ?? '')
-    .toLowerCase()
-    .replace(/\s+/g, ' ')
-    .trim();
-}
+export type DedupInput = DedupKeyInput;
+export { normalizeDescription, dedupKey } from './dedup-key';
 
 /** Детерминированный хеш строки операции для дедупликации. */
 export function computeExternalHash(input: DedupInput): string {

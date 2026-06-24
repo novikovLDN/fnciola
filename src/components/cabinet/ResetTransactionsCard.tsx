@@ -44,6 +44,7 @@ export function ResetTransactionsCard() {
         title="Удалить все операции?"
         danger
         confirmLabel="Продолжить"
+        closeOnConfirm={false}
         message={<>Будет удалено <b>{count}</b> {plural(count, 'операция', 'операции', 'операций')}. Это действие необратимо.</>}
         onConfirm={() => setStep(2)}
         onClose={() => setStep(0)}

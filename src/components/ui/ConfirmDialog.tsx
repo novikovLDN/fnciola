@@ -12,6 +12,7 @@ export function ConfirmDialog({
   confirmLabel = 'Подтвердить',
   cancelLabel = 'Отмена',
   danger = false,
+  closeOnConfirm = true,
   onConfirm,
   onClose,
 }: {
@@ -21,6 +22,7 @@ export function ConfirmDialog({
   confirmLabel?: string;
   cancelLabel?: string;
   danger?: boolean;
+  closeOnConfirm?: boolean;
   onConfirm: () => void;
   onClose: () => void;
 }) {
@@ -59,7 +61,7 @@ export function ConfirmDialog({
             <div className="mt-6 flex gap-2">
               <button onClick={onClose} className="btn btn-secondary flex-1">{cancelLabel}</button>
               <button
-                onClick={() => { onConfirm(); onClose(); }}
+                onClick={() => { onConfirm(); if (closeOnConfirm) onClose(); }}
                 className={`btn flex-1 ${danger ? 'text-white' : 'btn-primary'}`}
                 style={danger ? { background: 'rgb(var(--negative))' } : undefined}
               >

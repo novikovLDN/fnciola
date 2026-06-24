@@ -5,6 +5,7 @@ import { db } from '@/db/client';
 import { users } from '@/db/schema';
 import { verifyPassword } from '@/lib/auth/password';
 import { createSession } from '@/lib/auth/session';
+import { recordLogin } from '@/lib/auth/users';
 
 export const runtime = 'nodejs';
 
@@ -23,5 +24,6 @@ export async function POST(req: Request) {
   }
 
   await createSession(user.id);
+  await recordLogin(user.id);
   return NextResponse.json({ ok: true });
 }

@@ -8,17 +8,20 @@ import { PLANS, pricePerMonthMinor, CURRENCY_PLANS } from '@/config/plans';
 import { formatMoney } from '@/lib/money';
 import { NotificationsCard } from './NotificationsCard';
 import { LogoutButton } from '@/components/cabinet/LogoutButton';
-import { IconKey } from '@/components/icons';
+import { DevicesCard } from '@/components/cabinet/DevicesCard';
+import { PasskeysCard } from '@/components/cabinet/PasskeysCard';
 
-/** Настройки (§15.2): профиль, валюта, passkeys, пароль, уведомления, подписка. */
+/** Настройки: профиль, валюта, passkeys, устройства, уведомления, подписка. */
 export default function SettingsPage() {
   const [currency, setCurrency] = useState('RUB');
   const [email, setEmail] = useState('');
+  const [publicId, setPublicId] = useState('');
 
   useEffect(() => {
     fetch('/api/auth/me').then((r) => r.json()).then((j) => {
       if (j.user?.email) setEmail(j.user.email);
       if (j.user?.displayCurrency) setCurrency(j.user.displayCurrency);
+      if (j.user?.publicId) setPublicId(j.user.publicId);
     }).catch(() => {});
   }, []);
   const currencyOptions = SUPPORTED_CURRENCY_CODES.map((code) => {
@@ -41,29 +44,17 @@ export default function SettingsPage() {
             <span className="text-sm text-muted">Валюта отображения</span>
             <Select className="mt-1.5" value={currency} onChange={setCurrency} options={currencyOptions} ariaLabel="Валюта отображения" />
           </div>
+          {publicId && (
+            <div className="max-w-sm">
+              <span className="text-sm text-muted">Ваш ID</span>
+              <div className="mt-1.5 inline-flex rounded-full bg-bg-2 px-3 py-1.5 font-mono text-xs tracking-wide">{publicId}</div>
+            </div>
+          )}
         </section>
       </Item>
 
-      <Item>
-        <section className="card space-y-3">
-          <h2 className="font-display text-lg font-semibold">Безопасность</h2>
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div>
-              <div className="font-medium">Passkey (Face ID / Touch ID)</div>
-              <div className="text-sm text-muted">Вход без пароля по WebAuthn (§11.2).</div>
-            </div>
-            <button className="btn btn-secondary"><IconKey size={16} /> Привязать passkey</button>
-          </div>
-          <div className="flex flex-wrap items-center justify-between gap-2 border-t border-ink/8 pt-3">
-            <div>
-              <div className="font-medium">Пароль</div>
-              <div className="text-sm text-muted">Минимум 8 символов.</div>
-            </div>
-            <button className="btn btn-ghost">Сменить пароль</button>
-          </div>
-        </section>
-      </Item>
-
+      <Item><PasskeysCard /></Item>
+      <Item><DevicesCard /></Item>
       <Item><NotificationsCard /></Item>
 
       <Item>

@@ -6,6 +6,7 @@ import { users } from '@/db/schema';
 import { checkCode } from '@/lib/auth/otp';
 import { hashPassword } from '@/lib/auth/password';
 import { createSession } from '@/lib/auth/session';
+import { recordLogin } from '@/lib/auth/users';
 
 export const runtime = 'nodejs';
 
@@ -29,5 +30,6 @@ export async function POST(req: Request) {
 
   await db.update(users).set({ passwordHash: await hashPassword(password), updatedAt: new Date() }).where(eq(users.id, rows[0].id));
   await createSession(rows[0].id);
+  await recordLogin(rows[0].id);
   return NextResponse.json({ ok: true });
 }

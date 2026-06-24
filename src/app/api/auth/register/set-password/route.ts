@@ -6,6 +6,7 @@ import { users } from '@/db/schema';
 import { checkCode } from '@/lib/auth/otp';
 import { hashPassword } from '@/lib/auth/password';
 import { createSession } from '@/lib/auth/session';
+import { recordSignup, recordLogin } from '@/lib/auth/users';
 
 export const runtime = 'nodejs';
 
@@ -38,5 +39,7 @@ export async function POST(req: Request) {
   }
 
   await createSession(userId);
+  if (existing[0]) await recordLogin(userId);
+  else await recordSignup(userId);
   return NextResponse.json({ ok: true });
 }

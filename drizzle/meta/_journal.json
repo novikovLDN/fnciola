@@ -15,6 +15,13 @@
       "when": 1782317119050,
       "tag": "0001_peaceful_wolfpack",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1782324175706,
+      "tag": "0002_cynical_baron_strucker",
+      "breakpoints": true
     }
   ]
 }

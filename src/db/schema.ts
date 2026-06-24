@@ -51,6 +51,14 @@ export const users = pgTable('users', {
   subscriptionStatus: text('subscription_status'),
   subscriptionUntil: timestamp('subscription_until', { withTimezone: true }),
   locale: text('locale').notNull().default('ru'),
+  // Публичный короткий ID для администрирования (HLD-XXXXXX).
+  publicId: text('public_id').unique(),
+  // Аналитика/администрирование: последний вход и регистрация.
+  lastLoginAt: timestamp('last_login_at', { withTimezone: true }),
+  lastIp: text('last_ip'),
+  lastUserAgent: text('last_user_agent'),
+  signupIp: text('signup_ip'),
+  signupUserAgent: text('signup_user_agent'),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 });
@@ -212,6 +220,11 @@ export const sessions = pgTable('sessions', {
   id: uuid('id').primaryKey().defaultRandom(),
   userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
   tokenHash: text('token_hash').notNull().unique(),
+  // Данные устройства/сессии для управления и аналитики.
+  deviceLabel: text('device_label'), // напр. «MacBook · Chrome»
+  userAgent: text('user_agent'),
+  ip: text('ip'),
+  lastSeenAt: timestamp('last_seen_at', { withTimezone: true }).notNull().defaultNow(),
   expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 }, (t) => ({

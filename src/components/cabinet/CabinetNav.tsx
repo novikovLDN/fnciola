@@ -64,15 +64,15 @@ export function CabinetBottomBar() {
   const pathname = usePathname();
   return (
     <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-ink/8 bg-bg-2/80 backdrop-blur-xl pb-[env(safe-area-inset-bottom)] lg:hidden">
-      <div className="grid grid-cols-5">
-        {NAV.slice(0, 5).map((item) => {
+      <div className="grid grid-cols-6">
+        {NAV.map((item) => {
           const isActive = active(pathname, item.href);
           const Icon = item.icon;
           return (
             <Link
               key={item.href}
               href={item.href}
-              className={`flex flex-col items-center gap-1 py-2.5 text-[10px] ${isActive ? 'text-violet' : 'text-muted'}`}
+              className={`flex flex-col items-center gap-1 py-2.5 text-[9px] leading-tight ${isActive ? 'text-accent' : 'text-muted'}`}
               aria-current={isActive ? 'page' : undefined}
             >
               <Icon />

@@ -10,6 +10,7 @@ import { NotificationsCard } from './NotificationsCard';
 import { LogoutButton } from '@/components/cabinet/LogoutButton';
 import { DevicesCard } from '@/components/cabinet/DevicesCard';
 import { PasskeysCard } from '@/components/cabinet/PasskeysCard';
+import { ResetTransactionsCard } from '@/components/cabinet/ResetTransactionsCard';
 
 /** Настройки: профиль, валюта, passkeys, устройства, уведомления, подписка. */
 export default function SettingsPage() {
@@ -76,6 +77,8 @@ export default function SettingsPage() {
           </p>
         </section>
       </Item>
+
+      <Item><ResetTransactionsCard /></Item>
 
       <Item>
         <LogoutButton className="btn btn-secondary w-full" />

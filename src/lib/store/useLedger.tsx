@@ -83,6 +83,7 @@ interface LedgerContextValue extends LedgerState {
   deleteTx: (id: string) => void;
   addAccount: (name: string, currency?: string) => Account;
   reset: () => void;
+  clearTransactions: () => void;
   seedSample: () => void;
   // проекты
   addProject: (name: string, currency?: string) => Project;
@@ -194,6 +195,9 @@ export function LedgerProvider({ children }: { children: React.ReactNode }) {
 
   const reset = useCallback(() => mutate(() => EMPTY), []);
 
+  // Удаляет ВСЕ операции (счета и проекты остаются).
+  const clearTransactions = useCallback(() => mutate((prev) => ({ ...prev, txs: [] })), []);
+
   const addProject = useCallback<LedgerContextValue['addProject']>((name, currency = DEFAULT_CURRENCY) => {
     const p: Project = { id: uid(), name, currency, cashBalance: 0, createdAt: Date.now() };
     mutate((prev) => ({ ...prev, projects: [...prev.projects, p] }));
@@ -280,6 +284,7 @@ export function LedgerProvider({ children }: { children: React.ReactNode }) {
       deleteTx,
       addAccount,
       reset,
+      clearTransactions,
       seedSample,
       addProject,
       deleteProject,
@@ -293,7 +298,7 @@ export function LedgerProvider({ children }: { children: React.ReactNode }) {
       totalExpense,
       accountBalance,
     };
-  }, [state, hydrated, addTx, deleteTx, addAccount, reset, seedSample, addProject, deleteProject, setProjectCash, addEntry, deleteEntry]);
+  }, [state, hydrated, addTx, deleteTx, addAccount, reset, clearTransactions, seedSample, addProject, deleteProject, setProjectCash, addEntry, deleteEntry]);
 
   return <LedgerContext.Provider value={value}>{children}</LedgerContext.Provider>;
 }

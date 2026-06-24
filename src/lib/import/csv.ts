@@ -112,17 +112,42 @@ export function parseCsv(content: string, defaultCurrency: string): CsvParseResu
   const errors: CsvParseResult['errors'] = [];
   const rows: RawTransaction[] = [];
 
-  const lines = content
-    .replace(/^﻿/, '') // BOM
-    .split(/\r?\n/)
-    .filter((l) => l.trim() !== '');
+  // Сохраняем исходные номера строк, но работаем по непустым.
+  const allLines = content.replace(/^﻿/, '').split(/\r?\n/);
+  const nonEmpty = allLines
+    .map((l, i) => ({ text: l, no: i + 1 }))
+    .filter((x) => x.text.trim() !== '');
 
-  if (lines.length < 2) {
+  if (nonEmpty.length < 2) {
     return { rows, errors: [{ line: 0, message: 'Файл пуст или без данных' }], detectedDelimiter: ',' };
   }
 
-  const delimiter = detectDelimiter(lines[0]);
-  const headers = parseCsvLine(lines[0], delimiter);
+  // Разделитель — по строке с максимумом колонок (шапка часто не первая).
+  const delimiter = detectDelimiterFrom(nonEmpty.slice(0, 40).map((x) => x.text));
+
+  // Ищем НАСТОЯЩУЮ строку-шапку: в ней есть и дата, и сумма (или дебет/кредит).
+  // Это позволяет пропускать «шапку выписки» банка (Альфа, Сбер и т.п.).
+  let headerIdx = -1;
+  let headers: string[] = [];
+  for (let i = 0; i < nonEmpty.length; i++) {
+    const cols = parseCsvLine(nonEmpty[i].text, delimiter);
+    const hasDate = findColumn(cols, DATE_HINTS) !== -1;
+    const hasAmount =
+      findColumn(cols, AMOUNT_HINTS) !== -1 || findColumn(cols, DEBIT_HINTS) !== -1 || findColumn(cols, CREDIT_HINTS) !== -1;
+    if (hasDate && hasAmount) {
+      headerIdx = i;
+      headers = cols;
+      break;
+    }
+  }
+
+  if (headerIdx === -1) {
+    return {
+      rows,
+      errors: [{ line: nonEmpty[0].no, message: 'Не найдена таблица операций (колонки даты и суммы)' }],
+      detectedDelimiter: delimiter,
+    };
+  }
 
   const idxDate = findColumn(headers, DATE_HINTS);
   const idxAmount = findColumn(headers, AMOUNT_HINTS);
@@ -132,41 +157,37 @@ export function parseCsv(content: string, defaultCurrency: string): CsvParseResu
   const idxDesc = findColumn(headers, DESC_HINTS);
   const idxMerchant = findColumn(headers, MERCHANT_HINTS);
 
-  if (idxDate === -1) {
-    errors.push({ line: 1, message: 'Не найдена колонка с датой' });
-  }
-  if (idxAmount === -1 && idxDebit === -1 && idxCredit === -1) {
-    errors.push({ line: 1, message: 'Не найдена колонка с суммой' });
-  }
-  if (errors.length) {
-    return { rows, errors, detectedDelimiter: delimiter };
-  }
-
-  for (let i = 1; i < lines.length; i++) {
-    const lineNo = i + 1;
+  for (let i = headerIdx + 1; i < nonEmpty.length; i++) {
+    const { text, no } = nonEmpty[i];
     try {
-      const cols = parseCsvLine(lines[i], delimiter);
-      const dateRaw = idxDate >= 0 ? cols[idxDate] ?? '' : '';
+      const cols = parseCsvLine(text, delimiter);
+      const dateRaw = (idxDate >= 0 ? cols[idxDate] ?? '' : '').trim();
+      // Пустая дата — это итоги/футер/разделитель: пропускаем молча.
+      if (!dateRaw) continue;
+      // Строки, где в колонке даты вообще не дата (подписи, «Страница 1 из 1»),
+      // не считаем ошибкой — это футер выписки.
+      if (!/\d{1,4}[.\-/]\d{1,2}|\d{4}-\d{2}/.test(dateRaw)) continue;
       const occurredAt = normalizeDate(dateRaw);
       if (!occurredAt) {
-        errors.push({ line: lineNo, message: `Не распознана дата "${dateRaw}"` });
+        errors.push({ line: no, message: `Не распознана дата «${dateRaw}»` });
         continue;
       }
 
-      const currency = (idxCurrency >= 0 ? cols[idxCurrency]?.trim() : '') || defaultCurrency;
+      let currency = (idxCurrency >= 0 ? cols[idxCurrency]?.trim() : '') || defaultCurrency;
+      if (currency.toUpperCase() === 'RUR') currency = 'RUB'; // старый код рубля
 
       let amountMinor: Minor;
       let direction: 'income' | 'expense';
 
-      if (idxAmount >= 0) {
-        const rawAmount = (cols[idxAmount] ?? '').trim();
-        const signedMinor = parseSignedAmount(rawAmount, currency);
+      if (idxAmount >= 0 && (cols[idxAmount] ?? '').trim() !== '') {
+        const signedMinor = parseSignedAmount((cols[idxAmount] ?? '').trim(), currency);
+        if (signedMinor === 0) continue; // нулевые/неинформативные строки
         direction = signedMinor >= 0 ? 'income' : 'expense';
         amountMinor = signedMinor;
       } else {
-        // Раздельные колонки дебет/кредит.
         const debit = idxDebit >= 0 ? safeParse(cols[idxDebit], currency) : 0;
         const credit = idxCredit >= 0 ? safeParse(cols[idxCredit], currency) : 0;
+        if (credit === 0 && debit === 0) continue;
         if (credit > 0) {
           direction = 'income';
           amountMinor = credit;
@@ -188,11 +209,28 @@ export function parseCsv(content: string, defaultCurrency: string): CsvParseResu
         merchantRaw,
       });
     } catch (err) {
-      errors.push({ line: lineNo, message: err instanceof Error ? err.message : 'Ошибка разбора строки' });
+      errors.push({ line: no, message: err instanceof Error ? err.message : 'Ошибка разбора строки' });
     }
   }
 
   return { rows, errors, detectedDelimiter: delimiter };
+}
+
+/** Выбор разделителя по набору строк: тот, что даёт стабильно больше колонок. */
+function detectDelimiterFrom(lines: string[]): string {
+  const candidates = [';', '\t', ','];
+  let best = ',';
+  let bestScore = -1;
+  for (const d of candidates) {
+    // Медиана числа колонок по строкам, где разделитель вообще встречается.
+    const counts = lines.map((l) => parseCsvLine(l, d).length).filter((c) => c > 1);
+    const score = counts.length ? Math.max(...counts) : 0;
+    if (score > bestScore) {
+      bestScore = score;
+      best = d;
+    }
+  }
+  return best;
 }
 
 function parseSignedAmount(raw: string, currency: string): Minor {

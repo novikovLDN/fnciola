@@ -75,6 +75,28 @@ describe('import/csv — парсер выписок (§9)', () => {
     const res = parseCsv('Сумма;Описание\n100;тест', 'RUB');
     expect(res.errors.length).toBeGreaterThan(0);
   });
+
+  it('находит таблицу операций после «шапки выписки» банка (Альфа-стиль)', () => {
+    const csv = [
+      ';;;;',
+      'Выписка по счету;;;;',
+      'Валюта счета;;RUR;;',
+      'Поступления;;;1 006 700,13 RUR;',
+      ';;;;',
+      'Операции по счету;;;;',
+      'Дата операции;Дата проводки;Код;Описание;Сумма в валюте счета;Статус',
+      '24.05.2026;24.05.2026;C1;Перевод по СБП;-22 500;Выполнен',
+      '25.05.2026;25.05.2026;B0;Внутрибанковский перевод;154 000,50;Выполнен',
+      '(подпись сотрудника АО «АЛЬФА-БАНК»);;;;;',
+      'Страница 1 из 1;;;;;',
+    ].join('\n');
+    const res = parseCsv(csv, 'RUB');
+    expect(res.errors).toHaveLength(0);
+    expect(res.rows).toHaveLength(2);
+    // RUR нормализуется в RUB; пробелы-разделители и запятая-десятичная
+    expect(res.rows[0]).toMatchObject({ occurredAt: '2026-05-24', direction: 'expense', amountOriginal: -2250000, currencyOriginal: 'RUB' });
+    expect(res.rows[1]).toMatchObject({ occurredAt: '2026-05-25', direction: 'income', amountOriginal: 15400050 });
+  });
 });
 
 describe('import/categorize — словарно-правиловая категоризация (§9.1, beta)', () => {

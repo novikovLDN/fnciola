@@ -7,7 +7,7 @@ import { parseOfx } from './ofx';
 import { parseCamt053 } from './camt053';
 import { parseMt940 } from './mt940';
 
-export type ImportFormat = 'csv' | 'xlsx' | 'ofx' | 'camt053' | 'mt940';
+export type ImportFormat = 'csv' | 'xlsx' | 'ofx' | 'camt053' | 'mt940' | 'pdf';
 
 export interface ParseFileResult {
   format: ImportFormat;
@@ -18,6 +18,14 @@ export interface ParseFileResult {
 export async function parseFile(file: File, defaultCurrency = 'RUB'): Promise<ParseFileResult> {
   const name = file.name.toLowerCase();
   const ext = name.includes('.') ? name.slice(name.lastIndexOf('.') + 1) : '';
+
+  // PDF — через pdf.js (бета): извлекаем текст и распознаём операции.
+  if (ext === 'pdf') {
+    const buf = await file.arrayBuffer();
+    const { parsePdf } = await import('./pdf');
+    const res = await parsePdf(buf, defaultCurrency);
+    return { format: 'pdf', rows: res.rows, errors: res.errors };
+  }
 
   // XLSX/XLS — через SheetJS, конвертируем первый лист в CSV и переиспользуем парсер.
   if (ext === 'xlsx' || ext === 'xls') {
@@ -50,4 +58,4 @@ export async function parseFile(file: File, defaultCurrency = 'RUB'): Promise<Pa
   return { format: 'csv', rows: res.rows, errors: res.errors };
 }
 
-export const ACCEPTED_EXTENSIONS = '.csv,.txt,.xlsx,.xls,.ofx,.qfx,.xml,.sta,.mt940';
+export const ACCEPTED_EXTENSIONS = '.csv,.txt,.xlsx,.xls,.ofx,.qfx,.xml,.sta,.mt940,.pdf';

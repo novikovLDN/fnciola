@@ -25,7 +25,7 @@ interface ReviewRow {
 }
 
 const FORMAT_LABEL: Record<ImportFormat, string> = {
-  csv: 'CSV', xlsx: 'Excel (XLSX)', ofx: 'OFX/QFX', camt053: 'CAMT.053', mt940: 'MT940',
+  csv: 'CSV', xlsx: 'Excel (XLSX)', ofx: 'OFX/QFX', camt053: 'CAMT.053', mt940: 'MT940', pdf: 'PDF (бета)',
 };
 const CAT_OPTIONS = CATEGORIES.map((c) => ({ value: c.key, label: c.label }));
 
@@ -205,6 +205,7 @@ export function ImportPanel({ heading }: { heading?: string }) {
             <li>• <b className="text-ink">OFX / QFX</b> — выгрузка из интернет-банка</li>
             <li>• <b className="text-ink">CAMT.053</b> — ISO 20022 (XML)</li>
             <li>• <b className="text-ink">MT940</b> — SWIFT-выписка</li>
+            <li>• <b className="text-ink">PDF</b> — выписка из банка <span className="text-accent">(бета)</span></li>
           </ul>
           <p className="mt-3 text-xs">Категории определяются по словарю (бета) — проверьте перед импортом. Дубликаты выявляются автоматически.</p>
         </div>
